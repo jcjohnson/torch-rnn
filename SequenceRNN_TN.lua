@@ -4,6 +4,13 @@ require 'nn'
 
 local layer, parent = torch.class('nn.SequenceRNN_TN', 'nn.Module')
 
+--[[
+Vanilla RNN with tanh nonlinearity that operates on entire sequences of data.
+
+This is the same as SequenceRNN, except that it swaps the order of the time and
+minibatch dimensions; this version is a bit faster but probably more irritating
+to work with.
+--]]
 
 function layer:__init(input_dim, hidden_dim)
   parent.__init(self)

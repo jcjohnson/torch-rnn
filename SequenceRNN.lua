@@ -4,6 +4,22 @@ require 'nn'
 
 local layer, parent = torch.class('nn.SequenceRNN', 'nn.Module')
 
+--[[
+Vanilla RNN with tanh nonlinearity that operates on entire sequences of data.
+
+The RNN has an input dim of D, a hidden dim of H, operates over sequences of
+length T and minibatches of size N.
+
+On the forward pass we accept a table {h0, x} where:
+- h0 is initial hidden states, of shape (N, H)
+- x is input sequence, of shape (N, T, D)
+
+The forward pass returns the hidden states at each timestep, of shape (N, T, H).
+
+SequenceRNN_TN swaps the order of the time and minibatch dimensions; this is
+very slightly faster, but probably not worth it since it is more irritating to
+work with.
+--]]
 
 function layer:__init(input_dim, hidden_dim)
   parent.__init(self)
