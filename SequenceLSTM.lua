@@ -6,6 +6,17 @@ local utils = require 'utils'
 
 local layer, parent = torch.class('nn.SequenceLSTM', 'nn.Module')
 
+--[[
+If we add up the sizes of all the tensors for output, gradInput, weights,
+gradWeights, and temporary buffers, we get that a SequenceLSTM stores this many
+scalar values:
+
+NTD + 6NTH + 8NH + 8H^2 + 8DH + 9H
+
+For N = 100, D = 512, T = 100, H = 1024 and with 4 bytes per number, this comes
+out to 305MB. Note that this class doesn't own input or gradOutput, so you'll
+see a bit higher memory usage in practice.
+--]]
 
 function layer:__init(input_dim, hidden_dim)
   parent.__init(self)
@@ -19,10 +30,13 @@ function layer:__init(input_dim, hidden_dim)
   self.gradBias = torch.Tensor(4 * H):zero()
   self:reset()
 
-  self.cell = torch.Tensor()
-  self.gates = torch.Tensor()
-  self.buffer1 = torch.Tensor()
-  self.buffer2 = torch.Tensor()
+  self.cell = torch.Tensor()    -- This will be (N, T, H)
+  self.gates = torch.Tensor()   -- This will be (N, T, 4H)
+  self.buffer1 = torch.Tensor() -- This will be (N, H)
+  self.buffer2 = torch.Tensor() -- This will be (N, H)
+  self.buffer3 = torch.Tensor() -- This will be (H,)
+  self.grad_a_buffer = torch.Tensor() -- This will be (N, 4H)
+
   self.gradInput = {torch.Tensor(), torch.Tensor(), torch.Tensor()}
 end
 
@@ -130,28 +144,39 @@ function layer:backward(input, gradOutput, scale)
     local o = self.gates[{{}, t, {2 * H + 1, 3 * H}}]
     local g = self.gates[{{}, t, {3 * H + 1, 4 * H}}]
     
-    local grad_a = x.new(N, 4 * H):zero()
+    local grad_a = self.grad_a_buffer:resize(N, 4 * H):zero()
     local grad_ai = grad_a[{{}, {1, H}}]
     local grad_af = grad_a[{{}, {H + 1, 2 * H}}]
     local grad_ao = grad_a[{{}, {2 * H + 1, 3 * H}}]
     local grad_ag = grad_a[{{}, {3 * H + 1, 4 * H}}]
     
-    local tanh_next_c = torch.tanh(next_c) -- NEW TENSOR
-    local tanh_next_c2 = torch.cmul(tanh_next_c, tanh_next_c) -- NEW TENSOR
-    local my_grad_next_c = c0.new(#c0):zero() -- NEW TENSOR
+    -- We will use grad_ai, grad_af, and grad_ao as temporary buffers
+    -- to to compute grad_next_c. We will need tanh_next_c (stored in grad_ai)
+    -- to compute grad_ao; the other values can be overwritten after we compute
+    -- grad_next_c
+    local tanh_next_c = grad_ai:tanh(next_c)
+    local tanh_next_c2 = grad_af:cmul(tanh_next_c, tanh_next_c)
+    local my_grad_next_c = grad_ao
     my_grad_next_c:fill(1):add(-1, tanh_next_c2):cmul(o):cmul(grad_next_h)
     grad_next_c:add(my_grad_next_c)
     
+    -- We need tanh_next_c (currently in grad_ai) to compute grad_ao; after
+    -- that we can overwrite it.
+    grad_ao:fill(1):add(-1, o):cmul(o):cmul(tanh_next_c):cmul(grad_next_h)
+
+    -- Use grad_ai as a temporary buffer for computing grad_ag
+    local g2 = grad_ai:cmul(g, g)
+    grad_ag:fill(1):add(-1, g2):cmul(i):cmul(grad_next_c)
+
+    -- We don't need any temporary storage for these so do them last
     grad_ai:fill(1):add(-1, i):cmul(i):cmul(g):cmul(grad_next_c)
     grad_af:fill(1):add(-1, f):cmul(f):cmul(prev_c):cmul(grad_next_c)
-    grad_ao:fill(1):add(-1, o):cmul(o):cmul(tanh_next_c):cmul(grad_next_h)
-    local g2 = torch.cmul(g, g) --NEW TENSOR
-    grad_ag:fill(1):add(-1, g2):cmul(i):cmul(grad_next_c)
     
     grad_x[{{}, t}]:mm(grad_a, Wx:t())
     grad_Wx:addmm(scale, x[{{}, t}]:t(), grad_a)
     grad_Wh:addmm(scale, prev_h:t(), grad_a)
-    grad_b:add(scale, torch.sum(grad_a, 1)) -- NEW TENSOR
+    local grad_a_sum = self.buffer3:resize(H):sum(grad_a, 1)
+    grad_b:add(scale, grad_a_sum)
 
     grad_next_h:mm(grad_a, Wh:t())
     grad_next_c:cmul(f)
