@@ -56,13 +56,8 @@ function gradCheckTestFactory(N, T, D, H, dtype)
     local dw = rnn.gradWeight:clone()
     local db = rnn.gradBias:clone()
 
-    local function fx(x)
-      return rnn:forward{h0, x}
-    end
-
-    local function fh0(h0)
-      return rnn:forward{h0, x}
-    end
+    local function fx(x)   return rnn:forward{h0, x} end
+    local function fh0(h0) return rnn:forward{h0, x} end
 
     local function fw(w)
       local old_w = rnn.weight

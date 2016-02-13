@@ -1,6 +1,8 @@
 require 'torch'
 require 'nn'
 
+local utils = require 'utils'
+
 
 local layer, parent = torch.class('nn.SequenceRNN', 'nn.Module')
 
@@ -24,13 +26,13 @@ work with.
 function layer:__init(input_dim, hidden_dim)
   parent.__init(self)
 
-  self.input_dim = input_dim
-  self.hidden_dim = hidden_dim
+  local D, H = input_dim, hidden_dim
+  self.input_dim, self.hidden_dim = D, H
   
-  self.weight = torch.Tensor(input_dim + hidden_dim, hidden_dim)
-  self.gradWeight = torch.Tensor(input_dim + hidden_dim, hidden_dim)
-  self.bias = torch.Tensor(hidden_dim)
-  self.gradBias = torch.Tensor(hidden_dim)
+  self.weight = torch.Tensor(D + H, H)
+  self.gradWeight = torch.Tensor(D + H, H)
+  self.bias = torch.Tensor(H)
+  self.gradBias = torch.Tensor(H)
   self:reset()
 
   self.buffer1 = torch.Tensor()
@@ -50,19 +52,13 @@ end
 
 
 function layer:_get_sizes(input, gradOutput)
-  local h0, x = input[1], input[2]
-  assert(h0:dim() == 2)
-  assert(x:dim() == 3)
-  local N, H = h0:size(1), h0:size(2)
-  local T, D = x:size(2), x:size(3)
-  assert(x:size(1) == N)
-  assert(H == self.hidden_dim)
-  assert(D == self.input_dim)
+  local h0, x = unpack(input)
+  local N, T = x:size(1), x:size(2)
+  local H, D = self.hidden_dim, self.input_dim
+  utils.check_dims(h0, {N, H})
+  utils.check_dims(x, {N, T, D})
   if gradOutput then
-    assert(gradOutput:dim() == 3)
-    assert(gradOutput:size(1) == N)
-    assert(gradOutput:size(2) == T)
-    assert(gradOutput:size(3) == H)
+    utils.check_dims(gradOutput, {N, T, H})
   end
   return N, T, D, H
 end
