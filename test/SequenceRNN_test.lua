@@ -12,21 +12,21 @@ local tester = torch.Tester()
 local function forwardTestFactory(N, T, D, H, dtype)
   dtype = dtype or 'torch.DoubleTensor'
   return function()
-    local x = torch.randn(T, N, D):type(dtype)
+    local x = torch.randn(N, T, D):type(dtype)
     local h0 = torch.randn(N, H):type(dtype)
     local rnn = nn.SequenceRNN(D, H):type(dtype)
 
     local Wx = rnn.weight[{{1, D}}]:clone()
     local Wh = rnn.weight[{{D + 1, D + H}}]:clone()
     local b = rnn.bias:view(1, H):expand(N, H)
-    local h_naive = torch.zeros(T, N, H):type(dtype)
+    local h_naive = torch.zeros(N, T, H):type(dtype)
     local prev_h = h0
     for t = 1, T do
-      local a = torch.mm(x[t], Wx)
+      local a = torch.mm(x[{{}, t}], Wx)
       a = a + torch.mm(prev_h, Wh)
       a = a + b
       local next_h = torch.tanh(a)
-      h_naive[t] = next_h:clone()
+      h_naive[{{}, t}] = next_h:clone()
       prev_h = next_h
     end
 
@@ -43,7 +43,7 @@ tests.forwardFloatTest = forwardTestFactory(3, 4, 5, 6, 'torch.FloatTensor')
 function gradCheckTestFactory(N, T, D, H, dtype)
   dtype = dtype or 'torch.DoubleTensor'
   return function()
-    local x = torch.randn(T, N, D)
+    local x = torch.randn(N, T, D)
     local h0 = torch.randn(N, H)
 
     local rnn = nn.SequenceRNN(D, H)
@@ -106,8 +106,8 @@ function tests.scaleTest()
   rnn:zeroGradParameters()
 
   local h0 = torch.randn(N, H)
-  local x = torch.randn(T, N, D)
-  local dout = torch.randn(T, N, H)
+  local x = torch.randn(N, T, D)
+  local dout = torch.randn(N, T, H)
 
   -- Run forward / backward with scale = 0
   rnn:forward{h0, x}

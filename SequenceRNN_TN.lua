@@ -2,7 +2,7 @@ require 'torch'
 require 'nn'
 
 
-local layer, parent = torch.class('nn.SequenceRNN', 'nn.Module')
+local layer, parent = torch.class('nn.SequenceRNN_TN', 'nn.Module')
 
 
 function layer:__init(input_dim, hidden_dim)
@@ -38,14 +38,14 @@ function layer:_get_sizes(input, gradOutput)
   assert(h0:dim() == 2)
   assert(x:dim() == 3)
   local N, H = h0:size(1), h0:size(2)
-  local T, D = x:size(2), x:size(3)
-  assert(x:size(1) == N)
+  local T, D = x:size(1), x:size(3)
+  assert(x:size(2) == N)
   assert(H == self.hidden_dim)
   assert(D == self.input_dim)
   if gradOutput then
     assert(gradOutput:dim() == 3)
-    assert(gradOutput:size(1) == N)
-    assert(gradOutput:size(2) == T)
+    assert(gradOutput:size(1) == T)
+    assert(gradOutput:size(2) == N)
     assert(gradOutput:size(3) == H)
   end
   return N, T, D, H
@@ -56,7 +56,7 @@ end
 
 Input: Table of
 - h0: Initial hidden state of shape (N, H)
-- x:  Sequence of inputs, of shape (N, T, D)
+- x:  Sequence of inputs, of shape (T, N, D)
 
 Output:
 - h: Sequence of hidden states, of shape (T, N, H)
@@ -70,11 +70,11 @@ function layer:updateOutput(input)
   local Wx = self.weight[{{1, D}}]
   local Wh = self.weight[{{D + 1, D + H}}]
   
-  self.output:resize(N, T, H):zero()
+  self.output:resize(T, N, H):zero()
   local prev_h = h0
   for t = 1, T do
-    local cur_x = x[{{}, t}]
-    local next_h = self.output[{{}, t}]
+    local cur_x = x[t]
+    local next_h = self.output[t]
     next_h:addmm(bias_expand, cur_x, Wx)
     next_h:addmm(prev_h, Wh)
     next_h:tanh()
@@ -106,17 +106,13 @@ function layer:backward(input, gradOutput, scale)
   local grad_x = self.gradInput[2]:resizeAs(x):zero()
   local grad_next_h = self.buffer1:resizeAs(h0):zero()
   for t = T, 1, -1 do
-    local next_h, prev_h = self.output[{{}, t}], nil
-    if t == 1 then
-      prev_h = h0
-    else
-      prev_h = self.output[{{}, t - 1}]
-    end
-    grad_next_h:add(grad_h[{{}, t}])
+    local next_h, prev_h = self.output[t], nil
+    if t == 1 then prev_h = h0 else prev_h = self.output[t - 1] end
+    grad_next_h:add(grad_h[t])
     local grad_a = grad_h0:resizeAs(h0)
     grad_a:fill(1):addcmul(-1.0, next_h, next_h):cmul(grad_next_h)
-    grad_x[{{}, t}]:mm(grad_a, Wx:t())
-    grad_Wx:addmm(scale, x[{{}, t}]:t(), grad_a)
+    grad_x[t]:mm(grad_a, Wx:t())
+    grad_Wx:addmm(scale, x[t]:t(), grad_a)
     grad_Wh:addmm(scale, prev_h:t(), grad_a)
     grad_next_h:mm(grad_a, Wh:t())
     self.buffer2:resize(H):sum(grad_a, 1)
