@@ -83,6 +83,11 @@ function layer:updateOutput(input)
 end
 
 
+-- Normally we don't implement backward, and instead just implement
+-- updateGradInput and accGradParameters. However for an RNN, separating these
+-- two operations would result in quite a bit of repeated code and compute;
+-- therefore we'll just implement backward and update gradInput and
+-- gradients with respect to parameters at the same time.:w
 function layer:backward(input, gradOutput, scale)
   scale = scale or 1.0
   local h0, x = input[1], input[2]
@@ -124,3 +129,4 @@ end
 function layer:accGradParameters(input, gradOutput, scale)
   self:backward(input, gradOutput, scale)
 end
+

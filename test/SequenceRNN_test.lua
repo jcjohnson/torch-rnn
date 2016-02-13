@@ -99,6 +99,41 @@ end
 
 tests.gradCheckTest = gradCheckTestFactory(2, 3, 4, 5)
 
+
+function tests.scaleTest()
+  local N, T, D, H = 4, 5, 6, 7
+  local rnn = nn.SequenceRNN(D, H)
+  rnn:zeroGradParameters()
+
+  local h0 = torch.randn(N, H)
+  local x = torch.randn(T, N, D)
+  local dout = torch.randn(T, N, H)
+
+  -- Run forward / backward with scale = 0
+  rnn:forward{h0, x}
+  rnn:backward({h0, x}, dout, 0)
+  tester:asserteq(rnn.gradWeight:sum(), 0)
+  tester:asserteq(rnn.gradBias:sum(), 0)
+
+  -- Run forward / backward with scale = 2.0 and record gradients
+  rnn:forward{h0, x}
+  rnn:backward({h0, x}, dout, 2.0)
+  local dw2 = rnn.gradWeight:clone()
+  local db2 = rnn.gradBias:clone()
+
+  -- Run forward / backward with scale = 4.0 and record gradients
+  rnn:zeroGradParameters()
+  rnn:forward{h0, x}
+  rnn:backward({h0, x}, dout, 4.0)
+  local dw4 = rnn.gradWeight:clone()
+  local db4 = rnn.gradBias:clone()
+
+  -- Gradients after the 4.0 step should be twice as big
+  tester:assertTensorEq(torch.cdiv(dw4, dw2), torch.Tensor(#dw2):fill(2), 1e-6)
+  tester:assertTensorEq(torch.cdiv(db4, db2), torch.Tensor(#db2):fill(2), 1e-6)
+end
+
+
 tester:add(tests)
 tester:run()
 
