@@ -255,3 +255,13 @@ function layer:backward(input, gradOutput, scale)
   return self.gradInput
 end
 
+
+function layer:updateGradInput(input, gradOutput)
+  self:backward(input, gradOutput, 0)
+end
+
+
+function layer:accGradParameters(input, gradOutput, scale)
+  self:backward(input, gradOutput, scale)
+end
+

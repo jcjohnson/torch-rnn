@@ -1,3 +1,5 @@
+local cjson = require 'cjson'
+
 local utils = {}
 
 
@@ -34,6 +36,15 @@ function utils.get_size(obj)
   for k, v in pairs(obj) do size = size + 1 end
   return size
 end
+
+
+function utils.read_json(path)
+  local f = io.open(path, 'r')
+  local s = f:read('*all')
+  f:close()
+  return cjson.decode(s)
+end
+
 
 
 return utils
