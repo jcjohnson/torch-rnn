@@ -61,13 +61,21 @@ function layer:clearStates()
 end
 
 
-function layer:_get_sizes(input, gradOutput)
+function layer:_unpack_input(input)
   local h0, x = nil, nil
-  if torch.type(input) == 'table' then
-    h0, x = input[1], input[2]
+  if torch.type(input) == 'table' and #input == 2 then
+    h0, x = unpack(input)
   elseif torch.isTensor(input) then
     x = input
+  else
+    assert(false, 'invalid input')
   end
+  return h0, x
+end
+
+
+function layer:_get_sizes(input, gradOutput)
+  local h0, x = self:_unpack_input(input)
   local N, T = x:size(1), x:size(2)
   local H, D = self.hidden_dim, self.input_dim
   utils.check_dims(x, {N, T, D})
@@ -91,14 +99,11 @@ Output:
 - h: Sequence of hidden states, of shape (T, N, H)
 --]]
 function layer:updateOutput(input)
+  local h0, x = self:_unpack_input(input)
   local N, T, D, H = self:_get_sizes(input)
-
-  local h0, x
-  if torch.type(input) == 'table' then
-    h0, x = input[1], input[2]
-    self._return_grad_h0 = true
-  elseif torch.isTensor(input) then
-    h0, x = self.h0, input
+  self._return_grad_h0 = (h0 ~= nil)
+  if not h0 then
+    h0 = self.h0
     if h0:nElement() == 0 or not self.remember_states then
       h0:resize(N, H):zero()
     elseif self.remember_states then
@@ -106,7 +111,6 @@ function layer:updateOutput(input)
       assert(prev_N == N, 'batch sizes must be constant to remember states')
       h0:copy(self.output[{{}, prev_T}])
     end
-    self._return_grad_h0 = false
   end
 
   local bias_expand = self.bias:view(1, H):expand(N, H)
@@ -135,15 +139,11 @@ end
 -- gradients with respect to parameters at the same time.
 function layer:backward(input, gradOutput, scale)
   scale = scale or 1.0
-  local h0, x
-  if torch.type(input) == 'table' then
-    h0, x = input[1], input[2]
-  else
-    h0, x = self.h0, input
-  end
+  local N, T, D, H = self:_get_sizes(input, gradOutput)
+  local h0, x = self:_unpack_input(input)
+  if not h0 then h0 = self.h0 end
   local grad_h = gradOutput
 
-  local N, T, D, H = self:_get_sizes(input, gradOutput)
   local Wx = self.weight[{{1, D}}]
   local Wh = self.weight[{{D + 1, D + H}}]
   local grad_Wx = self.gradWeight[{{1, D}}]

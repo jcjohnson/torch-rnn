@@ -37,7 +37,14 @@ function layer:__init(input_dim, hidden_dim)
   self.buffer3 = torch.Tensor() -- This will be (H,)
   self.grad_a_buffer = torch.Tensor() -- This will be (N, 4H)
 
-  self.gradInput = {torch.Tensor(), torch.Tensor(), torch.Tensor()}
+  self.h0 = torch.Tensor()
+  self.c0 = torch.Tensor()
+  self.remember_states = false
+
+  self.grad_c0 = torch.Tensor()
+  self.grad_h0 = torch.Tensor()
+  self.grad_x = torch.Tensor()
+  self.gradInput = {self.grad_c0, self.grad_h0, self.grad_x}
 end
 
 
@@ -51,21 +58,49 @@ function layer:reset(std)
 end
 
 
+function layer:clearStates()
+  self.h0 = self.h0.new()
+  self.c0 = self.c0.new()
+end
+
+
+function layer:_unpack_input(input)
+  local c0, h0, x = nil, nil, nil
+  if torch.type(input) == 'table' and #input == 3 then
+    c0, h0, x = unpack(input)
+  elseif torch.type(input) == 'table' and #input == 2 then
+    h0, x = unpack(input)
+  elseif torch.isTensor(input) then
+    x = input
+  else
+    assert(false, 'invalid input')
+  end
+  return c0, h0, x
+end
+
+
 function layer:_get_sizes(input, gradOutput)
-  local h0, c0, x = unpack(input)
+  local c0, h0, x = self:_unpack_input(input)
   local N, T = x:size(1), x:size(2)
   local H, D = self.hidden_dim, self.input_dim
-  utils.check_dims(h0, {N, H})
-  utils.check_dims(c0, {N, H})
   utils.check_dims(x, {N, T, D})
+  if h0 then
+    utils.check_dims(h0, {N, H})
+  end
+  if c0 then
+    utils.check_dims(c0, {N, H})
+  end
+  if gradOutput then
+    utils.check_dims(gradOutput, {N, T, H})
+  end
   return N, T, D, H
 end
 
 
 --[[
 Input:
-- h0: Initial hidden state, (N, H)
 - c0: Initial cell state, (N, H)
+- h0: Initial hidden state, (N, H)
 - x: Input sequence, (N, T, D)
 
 Output:
@@ -74,9 +109,31 @@ Output:
 
 
 function layer:updateOutput(input)
-  local h0, c0, x = input[1], input[2], input[3]
-
+  local c0, h0, x = self:_unpack_input(input)
   local N, T, D, H = self:_get_sizes(input)
+
+  self._return_grad_c0 = (c0 ~= nil)
+  self._return_grad_h0 = (h0 ~= nil)
+  if not c0 then
+    c0 = self.c0
+    if c0:nElement() == 0 or not self.remember_states then
+      c0:resize(N, H):zero()
+    elseif self.remember_states then
+      local prev_N, prev_T = self.cell:size(1), self.cell:size(2)
+      assert(prev_N == N, 'batch sizes must be constant to remember states')
+      c0:copy(self.cell[{{}, prev_T}])
+    end
+  end
+  if not h0 then
+    h0 = self.h0
+    if h0:nElement() == 0 or not self.remember_states then
+      h0:resize(N, H):zero()
+    elseif self.remember_states then
+      local prev_N, prev_T = self.output:size(1), self.output:size(2)
+      assert(prev_N == N, 'batch sizes must be the same to remember states')
+      h0:copy(self.output[{{}, prev_T}])
+    end
+  end
 
   local bias_expand = self.bias:view(1, 4 * H):expand(N, 4 * H)
   local Wx = self.weight[{{1, D}}]
@@ -112,8 +169,11 @@ end
 
 function layer:backward(input, gradOutput, scale)
   scale = scale or 1.0
-  local h0, c0, x = input[1], input[2], input[3]
-  local grad_h0, grad_c0, grad_x = unpack(self.gradInput)
+  local c0, h0, x = self:_unpack_input(input)
+  if not c0 then c0 = self.c0 end
+  if not h0 then h0 = self.h0 end
+
+  local grad_c0, grad_h0, grad_x = self.grad_c0, self.grad_h0, self.grad_x
   local h, c = self.output, self.cell
   local grad_h = gradOutput
 
@@ -183,6 +243,14 @@ function layer:backward(input, gradOutput, scale)
   end
   grad_h0:copy(grad_next_h)
   grad_c0:copy(grad_next_c)
+
+  if self._return_grad_c0 and self._return_grad_h0 then
+    self.gradInput = {self.grad_c0, self.grad_h0, self.grad_x}
+  elseif self._return_grad_h0 then
+    self.gradInput = {self.grad_h0, self.grad_x}
+  else
+    self.gradInput = self.grad_x
+  end
 
   return self.gradInput
 end

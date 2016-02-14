@@ -11,7 +11,8 @@ Inputs:
 function utils.check_dims(x, dims)
   assert(x:dim() == #dims)
   for i, d in ipairs(dims) do
-    assert(x:size(i) == d)
+    local msg = 'Expected %d, got %d'
+    assert(x:size(i) == d, string.format(msg, d, x:size(i)))
   end
 end
 
