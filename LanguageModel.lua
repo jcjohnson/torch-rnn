@@ -1,7 +1,6 @@
 require 'torch'
 require 'nn'
 
-require 'OneHot'
 require 'SequenceRNN'
 require 'SequenceLSTM'
 
@@ -13,7 +12,12 @@ local LM, parent = torch.class('nn.LanguageModel', 'nn.Module')
 
 function LM:__init(kwargs)
   self.idx_to_token = utils.get_kwarg(kwargs, 'idx_to_token')
-  self.vocab_size = utils.get_size(self.idx_to_token)
+  self.token_to_idx = {}
+  self.vocab_size = 0
+  for idx, token in pairs(self.idx_to_token) do
+    self.token_to_idx[token] = idx
+    self.vocab_size = self.vocab_size + 1
+  end
 
   self.cell_type = utils.get_kwarg(kwargs, 'cell_type', 'lstm')
   self.wordvec_dim = utils.get_kwarg(kwargs, 'wordvec_dim', 128)
@@ -77,5 +81,58 @@ function LM:resetStates()
   for i, rnn in ipairs(self.rnns) do
     rnn:resetStates()
   end
+end
+
+
+function LM:encode_string(s)
+  local encoded = torch.LongTensor(#s)
+  for i = 1, #s do
+    local token = s:sub(i, i)
+    local idx = self.token_to_idx[token]
+    assert(idx ~= nil, 'Got invalid idx')
+    encoded[i] = idx
+  end
+  return encoded
+end
+
+
+function LM:decode_string(encoded)
+  assert(torch.isTensor(encoded) and encoded:dim() == 1)
+  local s = ''
+  for i = 1, encoded:size(1) do
+    s = s .. self.idx_to_token[encoded[i]]
+  end
+  return s
+end
+
+
+--[[
+Sample from the language model. Note that this will reset the states of the
+underlying RNNs.
+
+Inputs:
+- init: (1, T0) array of integers
+- max_length: Number of characters to sample
+
+Returns:
+- sampled: (1, max_length) array of integers, where the first part is init.
+--]]
+function LM:sample(init, max_length)
+  local T0, T = init:size(2), max_length
+  local sampled = torch.LongTensor(1, T)
+  sampled[{{}, {1, T0}}]:copy(init)
+  self:resetStates()
+  
+  self:resetStates()
+  local scores = self:forward(init)[{{}, {T0, T0}}]
+  for t = T0 + 1, T do
+    local _, next_char = scores:max(3)
+    next_char = next_char[{{}, {}, 1}]
+    sampled[{{}, {t, t}}]:copy(next_char)
+    scores = self:forward(next_char)
+  end
+
+  self:resetStates()
+  return sampled
 end
 
