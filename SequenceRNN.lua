@@ -56,7 +56,7 @@ function layer:reset(std)
 end
 
 
-function layer:clearStates()
+function layer:resetStates()
   self.h0 = self.h0.new()
 end
 

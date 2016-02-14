@@ -185,8 +185,8 @@ function tests.rememberStateTest()
     final_h = out[{{}, T}]:clone()
   end
 
-  -- After calling clearStates() the initial hidden state should be zero
-  rnn:clearStates()
+  -- After calling resetStates() the initial hidden state should be zero
+  rnn:resetStates()
   local x = torch.randn(N, T, D)
   local dout = torch.randn(N, T, H)
   rnn:forward(x)

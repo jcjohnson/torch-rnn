@@ -1,6 +1,7 @@
 require 'torch'
 require 'nn'
 
+require 'OneHot'
 require 'SequenceRNN'
 require 'SequenceLSTM'
 
@@ -72,9 +73,9 @@ function LM:parameters()
 end
 
 
-function LM:clearStates()
+function LM:resetStates()
   for i, rnn in ipairs(self.rnns) do
-    rnn:clearStates()
+    rnn:resetStates()
   end
 end
 

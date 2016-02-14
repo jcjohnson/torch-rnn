@@ -193,8 +193,8 @@ function tests.rememberStatesTest()
     final_h = out[{{}, T}]:clone()
   end
 
-  -- Initial states should reset to zero after we call clearStates
-  lstm:clearStates()
+  -- Initial states should reset to zero after we call resetStates
+  lstm:resetStates()
   local x = torch.randn(N, T, D)
   local dout = torch.randn(N, T, H)
   lstm:forward(x)
