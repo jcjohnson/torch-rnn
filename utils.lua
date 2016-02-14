@@ -16,4 +16,23 @@ function utils.check_dims(x, dims)
 end
 
 
+function utils.get_kwarg(kwargs, name, default)
+  if kwargs == nil then kwargs = {} end
+  if kwargs[name] == nil and default == nil then
+    assert(false, string.format('"%s" expected and not given', name))
+  elseif kwargs[name] == nil then
+    return default
+  else
+    return kwargs[name]
+  end
+end
+
+
+function utils.get_size(obj)
+  local size = 0
+  for k, v in pairs(obj) do size = size + 1 end
+  return size
+end
+
+
 return utils

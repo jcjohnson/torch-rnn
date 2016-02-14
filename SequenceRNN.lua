@@ -35,9 +35,14 @@ function layer:__init(input_dim, hidden_dim)
   self.gradBias = torch.Tensor(H)
   self:reset()
 
+  self.h0 = torch.Tensor()
+  self.remember_states = false
+
   self.buffer1 = torch.Tensor()
   self.buffer2 = torch.Tensor()
-  self.gradInput = {torch.Tensor(), torch.Tensor()}
+  self.grad_h0 = torch.Tensor()
+  self.grad_x = torch.Tensor()
+  self.gradInput = {self.grad_h0, self.grad_x}
 end
 
 
@@ -51,12 +56,24 @@ function layer:reset(std)
 end
 
 
+function layer:clearStates()
+  self.h0 = self.h0.new()
+end
+
+
 function layer:_get_sizes(input, gradOutput)
-  local h0, x = unpack(input)
+  local h0, x = nil, nil
+  if torch.type(input) == 'table' then
+    h0, x = input[1], input[2]
+  elseif torch.isTensor(input) then
+    x = input
+  end
   local N, T = x:size(1), x:size(2)
   local H, D = self.hidden_dim, self.input_dim
-  utils.check_dims(h0, {N, H})
   utils.check_dims(x, {N, T, D})
+  if h0 then
+    utils.check_dims(h0, {N, H})
+  end
   if gradOutput then
     utils.check_dims(gradOutput, {N, T, H})
   end
@@ -74,9 +91,23 @@ Output:
 - h: Sequence of hidden states, of shape (T, N, H)
 --]]
 function layer:updateOutput(input)
-  local h0, x = input[1], input[2]
-
   local N, T, D, H = self:_get_sizes(input)
+
+  local h0, x
+  if torch.type(input) == 'table' then
+    h0, x = input[1], input[2]
+    self._return_grad_h0 = true
+  elseif torch.isTensor(input) then
+    h0, x = self.h0, input
+    if h0:nElement() == 0 or not self.remember_states then
+      h0:resize(N, H):zero()
+    elseif self.remember_states then
+      local prev_N, prev_T = self.output:size(1), self.output:size(2)
+      assert(prev_N == N, 'batch sizes must be constant to remember states')
+      h0:copy(self.output[{{}, prev_T}])
+    end
+    self._return_grad_h0 = false
+  end
 
   local bias_expand = self.bias:view(1, H):expand(N, H)
   local Wx = self.weight[{{1, D}}]
@@ -104,7 +135,12 @@ end
 -- gradients with respect to parameters at the same time.
 function layer:backward(input, gradOutput, scale)
   scale = scale or 1.0
-  local h0, x = input[1], input[2]
+  local h0, x
+  if torch.type(input) == 'table' then
+    h0, x = input[1], input[2]
+  else
+    h0, x = self.h0, input
+  end
   local grad_h = gradOutput
 
   local N, T, D, H = self:_get_sizes(input, gradOutput)
@@ -114,8 +150,8 @@ function layer:backward(input, gradOutput, scale)
   local grad_Wh = self.gradWeight[{{D + 1, D + H}}]
   local grad_b = self.gradBias
 
-  local grad_h0 = self.gradInput[1]:resizeAs(h0):zero()
-  local grad_x = self.gradInput[2]:resizeAs(x):zero()
+  local grad_h0 = self.grad_h0:resizeAs(h0):zero()
+  local grad_x = self.grad_x:resizeAs(x):zero()
   local grad_next_h = self.buffer1:resizeAs(h0):zero()
   for t = T, 1, -1 do
     local next_h, prev_h = self.output[{{}, t}], nil
@@ -135,6 +171,13 @@ function layer:backward(input, gradOutput, scale)
     grad_b:add(scale, self.buffer2)
   end
   grad_h0:copy(grad_next_h)
+
+  if self._return_grad_h0 then
+    self.gradInput = {self.grad_h0, self.grad_x}
+  else
+    self.gradInput = self.grad_x
+  end
+
   return self.gradInput
 end
 

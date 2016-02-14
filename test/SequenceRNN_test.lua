@@ -9,6 +9,14 @@ local tests = {}
 local tester = torch.Tester()
 
 
+local function check_size(x, dims)
+  tester:asserteq(x:dim(), #dims)
+  for i, d in ipairs(dims) do
+    tester:assert(x:size(i) == d)
+  end
+end
+
+
 local function forwardTestFactory(N, T, D, H, dtype)
   dtype = dtype or 'torch.DoubleTensor'
   return function()
@@ -129,6 +137,64 @@ function tests.scaleTest()
 end
 
 
+--[[
+Check that everything works when we don't pass an initial hidden state.
+By default this should zero the hidden state on each forward pass.
+--]]
+function tests.noInitialStateTest()
+  local N, T, D, H = 4, 5, 6, 7
+  local rnn = nn.SequenceRNN(D, H)
+  
+  -- Run multiple forward passes to make sure the state is zero'd each time
+  for t = 1, 3 do
+    local x = torch.randn(N, T, D)
+    local dout = torch.randn(N, T, H)
+
+    local out = rnn:forward(x)
+    tester:assert(torch.isTensor(out))
+    check_size(out, {N, T, H})
+
+    local din = rnn:backward(x, dout)
+    tester:assert(torch.isTensor(din))
+    check_size(din, {N, T, D})
+
+    tester:asserteq(rnn.h0:sum(), 0, 0)
+  end
+end
+
+
+--[[
+If we set rnn.remember_states then the initial hidden state will the the
+final hidden state from the previous forward pass. Make sure this works!
+--]]
+function tests.rememberStateTest()
+  local N, T, D, H = 5, 6, 7, 8
+  local rnn = nn.SequenceRNN(D, H)
+  rnn.remember_states = true
+
+  local final_h
+  for t = 1, 3 do
+    local x = torch.randn(N, T, D)
+    local dout = torch.randn(N, T, H)
+
+    local out = rnn:forward(x)
+    local din = rnn:backward(x, dout)
+    if t > 1 then
+      tester:assertTensorEq(final_h, rnn.h0, 0)
+    end
+    final_h = out[{{}, T}]:clone()
+  end
+
+  -- After calling clearStates() the initial hidden state should be zero
+  rnn:clearStates()
+  local x = torch.randn(N, T, D)
+  local dout = torch.randn(N, T, H)
+  rnn:forward(x)
+  rnn:backward(x, dout)
+  tester:assertTensorEq(rnn.h0, torch.zeros(N, H), 0)
+end
+
+
 tester:add(tests)
 tester:run()
-
+  
