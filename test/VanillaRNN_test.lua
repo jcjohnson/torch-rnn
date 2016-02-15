@@ -1,7 +1,7 @@
 require 'torch'
 require 'nn'
 
-local gradcheck = require 'gradcheck'
+local gradcheck = require 'util.gradcheck'
 require 'VanillaRNN'
 
 

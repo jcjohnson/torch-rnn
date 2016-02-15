@@ -2,7 +2,7 @@ require 'torch'
 require 'nn'
 
 require 'LSTM'
-local gradcheck = require 'gradcheck'
+local gradcheck = require 'util.gradcheck'
 
 
 local tests = {}

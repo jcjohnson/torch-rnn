@@ -4,7 +4,7 @@ require 'nn'
 require 'VanillaRNN'
 require 'LSTM'
 
-local utils = require 'utils'
+local utils = require 'util.utils'
 
 
 local LM, parent = torch.class('nn.LanguageModel', 'nn.Module')

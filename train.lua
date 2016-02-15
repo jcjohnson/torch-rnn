@@ -5,9 +5,9 @@ require 'cunn'
 require 'optim'
 
 require 'LanguageModel'
-require 'DataLoader'
+require 'util.DataLoader'
 
-local utils = require 'utils'
+local utils = require 'util.utils'
 
 
 local cmd = torch.CmdLine()
