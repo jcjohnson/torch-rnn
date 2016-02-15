@@ -1,8 +1,6 @@
 require 'torch'
 require 'nn'
 
-local utils = require 'utils'
-
 
 local layer, parent = torch.class('nn.SequenceLSTM', 'nn.Module')
 
@@ -65,6 +63,14 @@ function layer:resetStates()
 end
 
 
+local function check_dims(x, dims)
+  assert(x:dim() == #dims)
+  for i, d in ipairs(dims) do
+    assert(x:size(i) == d)
+  end
+end
+
+
 function layer:_unpack_input(input)
   local c0, h0, x = nil, nil, nil
   if torch.type(input) == 'table' and #input == 3 then
@@ -84,15 +90,15 @@ function layer:_get_sizes(input, gradOutput)
   local c0, h0, x = self:_unpack_input(input)
   local N, T = x:size(1), x:size(2)
   local H, D = self.hidden_dim, self.input_dim
-  utils.check_dims(x, {N, T, D})
+  check_dims(x, {N, T, D})
   if h0 then
-    utils.check_dims(h0, {N, H})
+    check_dims(h0, {N, H})
   end
   if c0 then
-    utils.check_dims(c0, {N, H})
+    check_dims(c0, {N, H})
   end
   if gradOutput then
-    utils.check_dims(gradOutput, {N, T, H})
+    check_dims(gradOutput, {N, T, H})
   end
   return N, T, D, H
 end
