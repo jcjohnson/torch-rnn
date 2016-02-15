@@ -19,7 +19,7 @@ function LM:__init(kwargs)
     self.vocab_size = self.vocab_size + 1
   end
 
-  self.cell_type = utils.get_kwarg(kwargs, 'cell_type', 'lstm')
+  self.model_type = utils.get_kwarg(kwargs, 'model_type', 'lstm')
   self.wordvec_dim = utils.get_kwarg(kwargs, 'wordvec_size', 128)
   self.hidden_dim = utils.get_kwarg(kwargs, 'hidden_size', 256)
   self.num_layers = utils.get_kwarg(kwargs, 'num_layers', 1)
@@ -34,9 +34,9 @@ function LM:__init(kwargs)
     local prev_dim = H
     if i == 1 then prev_dim = D end
     local rnn
-    if self.cell_type == 'rnn' then
+    if self.model_type == 'rnn' then
       rnn = nn.VanillaRNN(prev_dim, H)
-    elseif self.cell_type == 'lstm' then
+    elseif self.model_type == 'lstm' then
       rnn = nn.LSTM(prev_dim, H)
     end
     rnn.remember_states = true

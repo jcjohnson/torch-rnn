@@ -17,7 +17,7 @@ cmd:option('-input_h5', 'data/tiny-shakespeare.h5')
 cmd:option('-input_json', 'data/tiny-shakespeare.json')
 
 -- Model options
-cmd:option('-cell_type', 'lstm')
+cmd:option('-model_type', 'lstm')
 cmd:option('-wordvec_size', 64)
 cmd:option('-rnn_size', 128)
 cmd:option('-num_layers', 2)
