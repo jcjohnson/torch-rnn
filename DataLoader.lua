@@ -19,7 +19,10 @@ function DataLoader:__init(kwargs)
   splits.val = f:read('/val'):all()
   splits.test = f:read('/test'):all()
 
-  for k, v in pairs(splits) do
+  self.x_splits = {}
+  self.y_splits = {}
+  self.split_sizes = {}
+  for split, v in pairs(splits) do
     local num = v:nElement()
     local extra = num % (N * T)
 
@@ -27,7 +30,25 @@ function DataLoader:__init(kwargs)
     local vx = v[{{1, num - extra}}]:view(-1, N, T):contiguous()
     local vy = v[{{2, num - extra + 1}}]:view(-1, N, T):contiguous()
 
-    self['x_' .. k] = vx
-    self['y_' .. k] = vy
+    self.x_splits[split] = vx
+    self.y_splits[split] = vy
+    self.split_sizes[split] = vx:size(1)
   end
+
+  self.split_idxs = {train=1, val=1, test=1}
 end
+
+
+function DataLoader:nextBatch(split)
+  local idx = self.split_idxs[split]
+  assert(idx, 'invalid split ' .. split)
+  local x = self.x_splits[split][idx]
+  local y = self.y_splits[split][idx]
+  if idx == self.split_sizes[split] then
+    self.split_idxs[split] = 1
+  else
+    self.split_idxs[split] = idx + 1
+  end
+  return x, y
+end
+
