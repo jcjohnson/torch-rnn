@@ -18,14 +18,14 @@ cmd:option('-input_json', 'data/tiny-shakespeare.json')
 
 -- Model options
 cmd:option('-cell_type', 'lstm')
-cmd:option('-wordvec_dim', 64)
-cmd:option('-hidden_dim', 128)
+cmd:option('-wordvec_size', 64)
+cmd:option('-rnn_size', 128)
 cmd:option('-num_layers', 2)
 cmd:option('-dropout', 0)
 
 -- Batch options
 cmd:option('-batch_size', 50)
-cmd:option('-num_timesteps', 50)
+cmd:option('-seq_length', 50)
 
 -- Optimization options
 cmd:option('-max_epochs', 10)
@@ -65,7 +65,7 @@ local params, grad_params = model:getParameters()
 local crit = nn.CrossEntropyCriterion():cuda()
 
 -- Set up some variables we will use below
-local N, T = opt.batch_size, opt.num_timesteps
+local N, T = opt.batch_size, opt.seq_length
 local train_loss_history = {}
 local val_loss_history = {}
 local val_loss_history_it = {}

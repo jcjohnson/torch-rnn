@@ -20,8 +20,8 @@ function LM:__init(kwargs)
   end
 
   self.cell_type = utils.get_kwarg(kwargs, 'cell_type', 'lstm')
-  self.wordvec_dim = utils.get_kwarg(kwargs, 'wordvec_dim', 128)
-  self.hidden_dim = utils.get_kwarg(kwargs, 'hidden_dim', 256)
+  self.wordvec_dim = utils.get_kwarg(kwargs, 'wordvec_size', 128)
+  self.hidden_dim = utils.get_kwarg(kwargs, 'hidden_size', 256)
   self.num_layers = utils.get_kwarg(kwargs, 'num_layers', 1)
   self.dropout = utils.get_kwarg(kwargs, 'dropout', 0)
 
