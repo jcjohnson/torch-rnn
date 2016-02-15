@@ -2,7 +2,7 @@ require 'torch'
 require 'nn'
 
 local gradcheck = require 'gradcheck'
-require 'SequenceRNN'
+require 'VanillaRNN'
 
 
 local tests = {}
@@ -22,7 +22,7 @@ local function forwardTestFactory(N, T, D, H, dtype)
   return function()
     local x = torch.randn(N, T, D):type(dtype)
     local h0 = torch.randn(N, H):type(dtype)
-    local rnn = nn.SequenceRNN(D, H):type(dtype)
+    local rnn = nn.VanillaRNN(D, H):type(dtype)
 
     local Wx = rnn.weight[{{1, D}}]:clone()
     local Wh = rnn.weight[{{D + 1, D + H}}]:clone()
@@ -54,7 +54,7 @@ function gradCheckTestFactory(N, T, D, H, dtype)
     local x = torch.randn(N, T, D)
     local h0 = torch.randn(N, H)
 
-    local rnn = nn.SequenceRNN(D, H)
+    local rnn = nn.VanillaRNN(D, H)
     local h = rnn:forward{h0, x}
 
     local dh = torch.randn(#h)
@@ -105,7 +105,7 @@ tests.gradCheckTest = gradCheckTestFactory(2, 3, 4, 5)
 
 function tests.scaleTest()
   local N, T, D, H = 4, 5, 6, 7
-  local rnn = nn.SequenceRNN(D, H)
+  local rnn = nn.VanillaRNN(D, H)
   rnn:zeroGradParameters()
 
   local h0 = torch.randn(N, H)
@@ -143,7 +143,7 @@ By default this should zero the hidden state on each forward pass.
 --]]
 function tests.noInitialStateTest()
   local N, T, D, H = 4, 5, 6, 7
-  local rnn = nn.SequenceRNN(D, H)
+  local rnn = nn.VanillaRNN(D, H)
   
   -- Run multiple forward passes to make sure the state is zero'd each time
   for t = 1, 3 do
@@ -169,7 +169,7 @@ final hidden state from the previous forward pass. Make sure this works!
 --]]
 function tests.rememberStateTest()
   local N, T, D, H = 5, 6, 7, 8
-  local rnn = nn.SequenceRNN(D, H)
+  local rnn = nn.VanillaRNN(D, H)
   rnn.remember_states = true
 
   local final_h

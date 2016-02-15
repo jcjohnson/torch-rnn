@@ -1,8 +1,8 @@
 require 'torch'
 require 'nn'
 
-require 'SequenceRNN'
-require 'SequenceLSTM'
+require 'VanillaRNN'
+require 'LSTM'
 
 local utils = require 'utils'
 
@@ -35,9 +35,9 @@ function LM:__init(kwargs)
     if i == 1 then prev_dim = D end
     local rnn
     if self.cell_type == 'rnn' then
-      rnn = nn.SequenceRNN(prev_dim, H)
+      rnn = nn.VanillaRNN(prev_dim, H)
     elseif self.cell_type == 'lstm' then
-      rnn = nn.SequenceLSTM(prev_dim, H)
+      rnn = nn.LSTM(prev_dim, H)
     end
     rnn.remember_states = true
     table.insert(self.rnns, rnn)
@@ -147,7 +147,8 @@ function LM:sample(kwargs)
     if verbose > 0 then
       print('Seeding with uniform probabilities')
     end
-    scores = self.net.output.new(1, 1, self.vocab_size):fill(1)
+    local w = self.net:get(1).weight
+    scores = w.new(1, 1, self.vocab_size):fill(1)
     first_t = 1
   end
   

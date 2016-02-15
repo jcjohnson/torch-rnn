@@ -2,7 +2,7 @@ require 'torch'
 require 'nn'
 
 
-local layer, parent = torch.class('nn.SequenceLSTM', 'nn.Module')
+local layer, parent = torch.class('nn.LSTM', 'nn.Module')
 
 --[[
 If we add up the sizes of all the tensors for output, gradInput, weights,

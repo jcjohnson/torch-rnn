@@ -1,7 +1,7 @@
 require 'torch'
 require 'nn'
 
-require 'SequenceLSTM'
+require 'LSTM'
 local gradcheck = require 'gradcheck'
 
 
@@ -24,7 +24,7 @@ function tests.testForward()
   local c0 = torch.randn(N, H)
   local x  = torch.randn(N, T, D)
 
-  local lstm = nn.SequenceLSTM(D, H)
+  local lstm = nn.LSTM(D, H)
   local h = lstm:forward{c0, h0, x}
 
   -- Do a naive forward pass
@@ -72,7 +72,7 @@ function tests.gradcheck()
   local h0 = torch.randn(N, H)
   local c0 = torch.randn(N, H)
   
-  local lstm = nn.SequenceLSTM(D, H)
+  local lstm = nn.LSTM(D, H)
   local h = lstm:forward{c0, h0, x}
 
   local dh = torch.randn(#h)
@@ -126,7 +126,7 @@ end
 -- state; in this case we do pass an initial hidden state and an input sequence
 function tests.noCellTest()
   local N, T, D, H = 4, 5, 6, 7
-  local lstm = nn.SequenceLSTM(D, H)
+  local lstm = nn.LSTM(D, H)
 
   for t = 1, 3 do
     local x = torch.randn(N, T, D)
@@ -151,7 +151,7 @@ end
 -- cell state; in this case we only pass input sequence of vectors
 function tests.noHiddenTest()
   local N, T, D, H = 4, 5, 6, 7
-  local lstm = nn.SequenceLSTM(D, H)
+  local lstm = nn.LSTM(D, H)
 
   for t = 1, 3 do
     local x = torch.randn(N, T, D)
@@ -172,7 +172,7 @@ end
 
 function tests.rememberStatesTest()
   local N, T, D, H = 5, 6, 7, 8
-  local lstm = nn.SequenceLSTM(D, H)
+  local lstm = nn.LSTM(D, H)
   lstm.remember_states = true
 
   local final_h, final_c = nil, nil

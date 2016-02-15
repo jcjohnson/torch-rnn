@@ -53,10 +53,11 @@ function tests.sampleTest()
     num_layers=6,
   }
   
-  local TT = 10
-  local init = torch.LongTensor{{2, 3, 6}}
-  local sampled = LM:sample(init, TT)
-  check_dims(sampled, {1, TT})
+  local TT = 100
+  local start_text = 'bad'
+  local sampled = LM:sample{start_text=start_text, length=TT}
+  tester:assert(torch.type(sampled) == 'string')
+  tester:assert(string.len(sampled) == TT)
 end
 
 

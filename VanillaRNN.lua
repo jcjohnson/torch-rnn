@@ -2,7 +2,7 @@ require 'torch'
 require 'nn'
 
 
-local layer, parent = torch.class('nn.SequenceRNN', 'nn.Module')
+local layer, parent = torch.class('nn.VanillaRNN', 'nn.Module')
 
 --[[
 Vanilla RNN with tanh nonlinearity that operates on entire sequences of data.
