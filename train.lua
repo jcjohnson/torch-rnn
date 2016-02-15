@@ -38,6 +38,9 @@ cmd:option('-print_every', 1)
 cmd:option('-checkpoint_every', 1000)
 cmd:option('-checkpoint_name', 'cv/checkpoint')
 
+cmd:option('-speed_benchmark', 0)
+cmd:option('-memory_benchmark', 0)
+
 cmd:option('-gpu', 0)
 
 local opt = cmd:parse(arg)
@@ -66,15 +69,28 @@ local N, T = opt.batch_size, opt.num_timesteps
 local train_loss_history = {}
 local val_loss_history = {}
 local val_loss_history_it = {}
+local forward_backward_times = {}
+local init_memory_usage, memory_usage = nil, {}
+
+if opt.memory_benchmark == 1 then
+  cutorch.synchronize()
+  local free, total = cutorch.getMemoryUsage(cutorch.getDevice())
+  init_memory_usage = total - free
+end
 
 -- Loss function that we pass to an optim method
 local function f(w)
   assert(w == params)
   grad_params:zero()
 
-  -- Get a minibatch and run the model forward
+  -- Get a minibatch and run the model forward, maybe timing it
+  local timer
   local x, y = loader:nextBatch('train')
   x, y = x:cuda(), y:cuda()
+  if opt.speed_benchmark == 1 then
+    cutorch.synchronize()
+    timer = torch.Timer()
+  end
   local scores = model:forward(x)
 
   -- Use the Criterion to compute loss; we need to reshape the scores to be
@@ -83,9 +99,27 @@ local function f(w)
   local y_view = y:view(N * T)
   local loss = crit:forward(scores_view, y_view)
 
-  -- Run the Criterion and model backward to compute gradients
+  -- Run the Criterion and model backward to compute gradients, maybe timing it
   local grad_scores = crit:backward(scores_view, y_view):view(N, T, -1)
   model:backward(x, grad_scores)
+  if timer then
+    cutorch.synchronize()
+    local time = timer:time().real
+    print('Forward / Backward pass took ', time)
+    table.insert(forward_backward_times, time)
+  end
+
+  for j = 1, 5 do collectgarbage() end
+
+  -- Maybe record memory usage
+  if opt.memory_benchmark == 1 then
+    cutorch.synchronize()
+    local free, total = cutorch.getMemoryUsage(cutorch.getDevice())
+    local memory_used = total - free - init_memory_usage
+    local memory_used_mb = memory_used / 1024 / 1024
+    print(string.format('Using %dMB of memory', memory_used_mb))
+    table.insert(memory_usage, memory_used)
+  end
 
   if opt.grad_clip > 0 then
     grad_params:clamp(-opt.grad_clip, opt.grad_clip)
@@ -152,6 +186,8 @@ for i = 1, num_iterations do
       train_loss_history = train_loss_history,
       val_loss_history = val_loss_history,
       val_loss_history_it = val_loss_history_it,
+      forward_backward_times = forward_backward_times,
+      memory_usage = memory_usage,
     }
     local filename = string.format('%s_%d.json', opt.checkpoint_name, i)
     utils.write_json(filename, checkpoint)
