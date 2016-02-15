@@ -100,6 +100,8 @@ function LM:decode_string(encoded)
   assert(torch.isTensor(encoded) and encoded:dim() == 1)
   local s = ''
   for i = 1, encoded:size(1) do
+    local idx = encoded[i]
+    local token = self.idx_to_token[idx]
     s = s .. self.idx_to_token[encoded[i]]
   end
   return s
@@ -111,13 +113,18 @@ Sample from the language model. Note that this will reset the states of the
 underlying RNNs.
 
 Inputs:
-- init: (1, T0) array of integers
+- init: String of length T0
 - max_length: Number of characters to sample
 
 Returns:
 - sampled: (1, max_length) array of integers, where the first part is init.
 --]]
 function LM:sample(init, max_length)
+  local return_string = false
+  if torch.type(init) == 'string' then
+    return_string = true
+    init = self:encode_string(init):view(1, -1)
+  end
   local T0, T = init:size(2), max_length
   local sampled = torch.LongTensor(1, T)
   sampled[{{}, {1, T0}}]:copy(init)
@@ -133,6 +140,10 @@ function LM:sample(init, max_length)
   end
 
   self:resetStates()
-  return sampled
+  if return_string then
+    return self:decode_string(sampled[1])
+  else
+    return sampled
+  end
 end
 

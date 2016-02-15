@@ -46,5 +46,13 @@ function utils.read_json(path)
 end
 
 
+function utils.write_json(path, obj)
+  local s = cjson.encode(obj)
+  local f = io.open(path, 'w')
+  f:write(s)
+  f:close()
+end
+
+
 
 return utils
