@@ -9,19 +9,6 @@ Compared to char-rnn, torch-rnn is up to **1.9x faster** and uses up to **7x les
 the [Benchmark](#benchmarks) section below.
 
 
-# TODOs
-- CPU support
-- OpenCL support?
-- Get rid of Python / JSON / HDF5 dependencies?
-- Documentation
-  - Dependencies / installation
-  - VanillaRNN
-  - LSTM
-  - LanguageModel
-  - preprocess.py
-  - train.lua
-  - sample.lua
-
 # Installation
 ## Python setup
 The preprocessing script is written in Python 2.7; its dependencies are in the file `requirements.txt`.
@@ -114,8 +101,7 @@ By default this will run in GPU mode using CUDA; to run in CPU-only mode, add th
 There are many more flags you can use to configure training; [read about them here](flags.md#training).
 
 ## Step 3: Sample from the model
-After training a model, you can generate new text by sampling from it using the script `sample.lua`. You'll typically run
-it like this:
+After training a model, you can generate new text by sampling from it using the script `sample.lua`. Run it like this:
 
 ```bash
 th sample.lua -checkpoint cv/checkpoint_10000.t7 -length 2000
@@ -129,6 +115,33 @@ By default the sampling script will run in GPU mode using CUDA; to run in CPU-on
 There are more flags you can use to configure sampling; [read about them here](flags.md#sampling).
 
 # Benchmarks
+To benchmark `torch-rnn` against `char-rnn`, we use each to train LSTM language models for the tiny-shakespeare dataset
+with 1, 2 or 3 layers and with an RNN size of 64, 128, 256, or 512. For each we use a minibatch size of 50, a sequence 
+length of 50, and no dropout. For each model size and for both implementations, we record the forward/backward times and 
+GPU memory usage over the first 100 training iterations, and use these measurements to compute the mean time and memory 
+usage.
 
-<img src='imgs/lstm_time_benchmark.png' width="400px">
-<img src='imgs/lstm_memory_benchmark.png' width="400px">
+All benchmarks were run on a machine with an Intel i7-4790k CPU, 32 GB main memory, and a Titan X GPU.
+
+Below we show the forward/backward times for both implementations, as well as the mean speedup of `torch-rnn` over 
+`char-rnn`. We see that `torch-rnn` is faster than `char-rnn` at all model sizes, with smaller models giving a larger
+speedup; for a single-layer LSTM with 128 hidden units, we achieve a **1.9x speedup**; for larger models we achieve about
+a 1.4x speedup.
+
+<img src='imgs/lstm_time_benchmark.png' width="800px">
+
+Below we show the GPU memory usage for both implementations, as well as the mean memory saving of `torch-rnn` over
+`char-rnn`. Again `torch-rnn` outperforms `char-rnn` at all model sizes, but here the savings become more significant for
+larger models: for models with 512 hidden units, we use **7x less memory** than `char-rnn`.
+
+<img src='imgs/lstm_memory_benchmark.png' width="800px">
+
+
+# TODOs
+- CPU support
+- OpenCL support?
+- Get rid of Python / JSON / HDF5 dependencies?
+- Documentation
+  - VanillaRNN
+  - LSTM
+  - LanguageModel
