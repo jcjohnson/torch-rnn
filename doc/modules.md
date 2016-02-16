@@ -49,6 +49,11 @@ back-propagation through time. You cause the model to forget its hidden states b
 
 These behaviors are all exercised in the [unit test for VanillaRNN.lua](../test/VanillaRNN_test.lua).
 
+As an implementation note, we implement `:backward` directly to compute both gradients with respect to inputs and 
+accumulate gradients with respect to weights since these two operations share a lot of computation. We override 
+`:updateGradInput` and `:accGradparameters` to call into `:backward`, so to avoid computing the same thing twice you
+should call `:backward` directly rather than calling `:updateGradInput` and then `:accGradParameters`.
+
 The file [VanillaRNN.lua](../VanillaRNN.lua) is standalone, with no dependencies other than torch and nn.
 
 # LSTM
@@ -99,7 +104,7 @@ grad_x = lstm:backward(x, grad_h)
 ```
 
 In all cases, `c0` is the initial cell state of shape `(N, H)`, `h0` is the initial hidden state of shape `(N, H)`,
-`x` is the sequence of input vectors of shape `(N, T, D)`, and `h` is the sequence of output hidden states, of shape
+`x` is the sequence of input vectors of shape `(N, T, D)`, and `h` is the sequence of output hidden states of shape
 `(N, T, H)`.
 
 If the initial cell state or initial hidden state are not provided, then by default they will be set to zero.
@@ -112,6 +117,25 @@ from the previous call, similar to the `VanillaRNN`. You can reset these initial
 
 These behaviors are exercised in the [unit test for LSTM.lua](../test/LSTM_test.lua).
 
+As an implementation note, we implement `:backward` directly to compute both gradients with respect to inputs and 
+accumulate gradients with respect to weights since these two operations share a lot of computation. We override 
+`:updateGradInput` and `:accGradparameters` to call into `:backward`, so to avoid computing the same thing twice you
+should call `:backward` directly rather than calling `:updateGradInput` and then `:accGradParameters`.
+
 The file [LSTM.lua](../LSTM.lua) is standalone, with no dependencies other than torch and nn.
 
 # LanguageModel
+```
+model = nn.LanguageModel(kwargs)
+```
+[LanguageModel](../LanguageModel.lua) uses the above modules to implement a multilayer recurrent neural network language
+model with dropout regularization. Since `LSTM` and `VanillaRNN` are `nn.Module` subclasses, we can implement a multilayer
+recurrent neural network by simply stacking multiple instance in an `nn.Sequential` container.
+
+`kwargs` is a table with the following keys:
+- `idx_to_token`: A table giving the vocabulary for the language model, mapping integer ids to string tokens.
+- `model_type`: "lstm" or "rnn"
+- `wordvec_size`: Dimension for word vector embeddings
+- `rnn_size`: Hidden state size for RNNs
+- `num_layers`: Number of RNN layers to use
+- `dropout`: Number between 0 and 1 giving dropout strength after each RNN layer
