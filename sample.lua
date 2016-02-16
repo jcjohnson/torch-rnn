@@ -8,8 +8,8 @@ require 'LanguageModel'
 
 local cmd = torch.CmdLine()
 cmd:option('-checkpoint', 'cv/checkpoint_4000.t7')
+cmd:option('-length', 2000)
 cmd:option('-start_text', '')
-cmd:option('-length', 1000)
 cmd:option('-sample', 1)
 cmd:option('-temperature', 1)
 cmd:option('-gpu', 0)

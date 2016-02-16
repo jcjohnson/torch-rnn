@@ -28,11 +28,11 @@ cmd:option('-batch_size', 50)
 cmd:option('-seq_length', 50)
 
 -- Optimization options
-cmd:option('-max_epochs', 10)
+cmd:option('-max_epochs', 50)
 cmd:option('-learning_rate', 2e-3)
 cmd:option('-grad_clip', 5)
 cmd:option('-lr_decay_every', 5)
-cmd:option('-lr_decay_factor', 0.2)
+cmd:option('-lr_decay_factor', 0.5)
 
 cmd:option('-print_every', 1)
 cmd:option('-checkpoint_every', 1000)
@@ -159,7 +159,8 @@ for i = 1, num_iterations do
   end
 
   -- Maybe save a checkpoint
-  if i % opt.checkpoint_every == 0 or i == num_iterations then
+  local check_every = opt.checkpoint_every
+  if (check_every > 0 and i % check_every == 0) or i == num_iterations then
     -- Evaluate loss on the validation set. Note that we reset the state of
     -- the model; this might happen in the middle of an epoch, but that
     -- shouldn't cause too much trouble.
