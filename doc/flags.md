@@ -41,7 +41,7 @@ The training script `train.lua` accepts the following command-line flags:
 
 **Backend options**:
 - `-gpu`: The ID of the GPU to use (zero-indexed). Default is 0. Set this to -1 to run in CPU-only mode
-- `-gpu_backend`: The GPU backend to use; either `cuda` or `opencl`. Default is `cuda`. NOTE: GPU training is currently disabled pending resolution of https://github.com/hughperkins/clnn/issues/32
+- `-gpu_backend`: The GPU backend to use; either `cuda` or `opencl`. Default is `cuda`.
 
 # Sampling
 The sampling script `sample.lua` accepts the following command-line flags:
