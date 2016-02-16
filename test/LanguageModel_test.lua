@@ -22,10 +22,11 @@ function tests.simpleTest()
   local idx_to_token = {[1]='a', [2]='b', [3]='c', [4]='d', [5]='e', [6]='f'}
   local LM = nn.LanguageModel{
     idx_to_token=idx_to_token,
-    cell_type='rnn',
-    wordvec_dim=D,
-    hidden_dim=H,
+    model_type='rnn',
+    wordvec_size=D,
+    rnn_size=H,
     num_layers=6,
+    dropout=0,
   }
   local crit = nn.CrossEntropyCriterion()
   local params, grad_params = LM:getParameters()
@@ -47,10 +48,11 @@ function tests.sampleTest()
   local idx_to_token = {[1]='a', [2]='b', [3]='c', [4]='d', [5]='e', [6]='f'}
   local LM = nn.LanguageModel{
     idx_to_token=idx_to_token,
-    cell_type='rnn',
-    wordvec_dim=D,
-    hidden_dim=H,
+    model_type='rnn',
+    wordvec_size=D,
+    rnn_size=H,
     num_layers=6,
+    dropout=0,
   }
   
   local TT = 100
@@ -69,10 +71,11 @@ function tests.encodeDecodeTest()
   local N, T, D, H, V = 2, 3, 4, 5, 7
   local LM = nn.LanguageModel{
     idx_to_token=idx_to_token,
-    cell_type='rnn',
-    wordvec_dim=D,
-    hidden_dim=H,
+    model_type='rnn',
+    wordvec_size=D,
+    rnn_size=H,
     num_layers=6,
+    dropout=0,
   }
 
   local s = 'a bad feed'

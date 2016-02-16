@@ -19,13 +19,13 @@ function LM:__init(kwargs)
     self.vocab_size = self.vocab_size + 1
   end
 
-  self.model_type = utils.get_kwarg(kwargs, 'model_type', 'lstm')
-  self.wordvec_dim = utils.get_kwarg(kwargs, 'wordvec_size', 128)
-  self.hidden_dim = utils.get_kwarg(kwargs, 'hidden_size', 256)
-  self.num_layers = utils.get_kwarg(kwargs, 'num_layers', 1)
-  self.dropout = utils.get_kwarg(kwargs, 'dropout', 0)
+  self.model_type = utils.get_kwarg(kwargs, 'model_type')
+  self.wordvec_dim = utils.get_kwarg(kwargs, 'wordvec_size')
+  self.rnn_size = utils.get_kwarg(kwargs, 'rnn_size')
+  self.num_layers = utils.get_kwarg(kwargs, 'num_layers')
+  self.dropout = utils.get_kwarg(kwargs, 'dropout')
 
-  local V, D, H = self.vocab_size, self.wordvec_dim, self.hidden_dim
+  local V, D, H = self.vocab_size, self.wordvec_dim, self.rnn_size
 
   self.net = nn.Sequential()
   self.rnns = {}
