@@ -27,6 +27,7 @@ The training script `train.lua` accepts the following command-line flags:
 **Optimization options**:
 - `-max_epochs`: How many training epochs to use for optimization. Default is 50.
 - `-learning_rate`: Learning rate for optimization. Default is `2e-3`.
+- `-grad_clip`: Maximum value for gradients; default is 5. Set to 0 to disable gradient clipping.
 - `-lr_decay_every`: How often to decay the learning rate, in epochs; default is 5.
 - `-lr_decay_factor`: How much to decay the learning rate. After every `lr_decay_every` epochs, the learning rate will be multiplied by the `lr_decay_factor`; default is 0.5.
 
