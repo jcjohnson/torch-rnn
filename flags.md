@@ -1,4 +1,4 @@
-Here we'll describe in detail the full set of command line flags for preprocessing, training, and sampling.
+Here we'll describe in detail the full set of command line flags available for preprocessing, training, and sampling.
 
 # Preprocessing
 The preprocessing script `scripts/preprocess.py` accepts the following command-line flags:
