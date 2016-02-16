@@ -134,7 +134,7 @@ Below we show the GPU memory usage for both implementations, as well as the mean
 `char-rnn`. Again `torch-rnn` outperforms `char-rnn` at all model sizes, but here the savings become more significant for
 larger models: for models with 512 hidden units, we use **7x less memory** than `char-rnn`.
 
-<img src='imgs/lstm_memory_benchmark.png' width="400px">
+<img src='imgs/lstm_memory_benchmark.png' width="800px">
 
 
 # TODOs
