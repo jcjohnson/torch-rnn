@@ -1,5 +1,9 @@
-torch-rnn provides high-peformance, reusable RNN and LSTM modules. These modules have no dependencies other than torch and nn
-and each lives in a single file, so they can easily be incorporated into other projects.
+# Modules
+torch-rnn provides high-peformance, reusable RNN and LSTM modules. These modules have no dependencies other than torch and 
+nn and each lives in a single file, so they can easily be incorporated into other projects.
+
+We also provide a LanguageModule used for character-level language modeling; this is less reusable, but demonstrates how
+LSTM and RNN modules can be mixed with existing torch modules.
 
 # VanillaRNN
 
