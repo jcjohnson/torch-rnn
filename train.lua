@@ -213,6 +213,8 @@ for i = 1, num_iterations do
       memory_usage = memory_usage,
     }
     local filename = string.format('%s_%d.json', opt.checkpoint_name, i)
+    -- Make sure the output directory exists before we try to write it
+    paths.mkdir(paths.basename(filename))
     utils.write_json(filename, checkpoint)
 
     -- Now save a torch checkpoint with the model
@@ -220,6 +222,7 @@ for i = 1, num_iterations do
     model:float()
     checkpoint.model = model
     local filename = string.format('%s_%d.t7', opt.checkpoint_name, i)
+    paths.mkdir(paths.basename(filename))
     torch.save(filename, checkpoint)
     model:type(dtype)
     params, grad_params = model:getParameters()
