@@ -48,11 +48,7 @@ local opt = cmd:parse(arg)
 
 -- Set up GPU stuff
 local dtype = 'torch.FloatTensor'
-if opt.gpu < 0 then
-  -- Memory benchmarking is only supported in CUDA mode
-  opt.memory_benchmark = 0
-  print 'Running in CPU mode'
-elseif opt.gpu >= 0 and opt.gpu_backend == 'cuda' then
+if opt.gpu >= 0 and opt.gpu_backend == 'cuda' then
   require 'cutorch'
   require 'cunn'
   cutorch.setDevice(opt.gpu + 1)
@@ -60,13 +56,18 @@ elseif opt.gpu >= 0 and opt.gpu_backend == 'cuda' then
   print(string.format('Running with CUDA on GPU %d', opt.gpu))
 elseif opt.gpu >= 0 and opt.gpu_backend == 'opencl' then
   -- Disabling OpenCL support for now because nn.LookupTable is broken in clnn.
-  assert(false, 'OpenCL backend is not supported yet. Sorry!')
+  assert(false, 'OpenCL training is not supported yet. Sorry!')
   -- Memory benchmarking is only supported in CUDA mode
+  -- TODO: Time benchmarking is probably wrong in OpenCL mode.
   require 'cltorch'
   require 'clnn'
   cltorch.setDevice(opt.gpu + 1)
   dtype = torch.Tensor():cl():type()
   print(string.format('Running with OpenCL on GPU %d', opt.gpu))
+else
+  -- Memory benchmarking is only supported in CUDA mode
+  opt.memory_benchmark = 0
+  print 'Running in CPU mode'
 end
 
 
