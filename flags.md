@@ -40,7 +40,8 @@ The training script `train.lua` accepts the following command-line flags:
 - `-memory_benchmark`: Set this to 1 to test the GPU memory usage at every iteration. This is disabled by default because like speed benchmarking it requires GPU synchronization. Memory benchmarking results will be printed and also stored in saved checkpoints. Only available when running in GPU mode.
 
 **Backend options**:
-- `-gpu`: The ID of the GPU to use (zero-indexed). Default is 0. Set this to -1 to run in CPU-only mode [NOT YET IMPLEMENTED]
+- `-gpu`: The ID of the GPU to use (zero-indexed). Default is 0. Set this to -1 to run in CPU-only mode
+- `-gpu_backend`: The GPU backend to use; either `cuda` or `opencl`. Default is `cuda`. NOTE: GPU training is currently disabled pending resolution of https://github.com/hughperkins/clnn/issues/32
 
 # Sampling
 The sampling script `sample.lua` accepts the following command-line flags:
@@ -49,5 +50,6 @@ The sampling script `sample.lua` accepts the following command-line flags:
 - `-start_text`: You can optionally start off the generation process with a string; if this is provided the start text will be processed by the trained network before we start sampling. Without this flag, the first character is chosen randomly.
 - `-sample`: Set this to 1 to sample from the next-character distribution at each timestep; set to 0 to instead just pick the argmax at every timestep. Sampling tends to produce more interesting results.
 - `-temperature`: Softmax temperature to use when sampling; default is 1. Higher temperatures give noiser samples. Not used when using argmax sampling (`sample` set to 0).
-- `-gpu`: The ID of the GPU to use (zero-indexed). Default is 0. Set this to -1 to run in CPU-only mode. [NOT IMPLEMENTED].
+- `-gpu`: The ID of the GPU to use (zero-indexed). Default is 0. Set this to -1 to run in CPU-only mode.
+- `-gpu_backend`: The GPU backend to use; either `cuda` or `opencl`. Default is `cuda`.
 - `-verbose`: By default just the sampled text is printed to the console. Set this to 1 to also print some diagnostic information.
