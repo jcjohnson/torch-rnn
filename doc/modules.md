@@ -7,14 +7,21 @@ and each lives in a single file, so they can easily be incorporated into other p
 rnn = nn.VanillaRNN(D, H)
 ```
 
-The VanillaRNN module implements vanilla recurrent neural networks with a hyperbolic tangent nonlinearity.
-It transforms a sequence of input vectors of dimension D into a sequence of hidden state vectors of dimension H.
-It operates over sequences of length T and minibatches of size N; the sequence length and minibatch size can change on each
-forward pass.
+A `VanillaRNN` module implements a vanilla recurrent neural network with a hyperbolic tangent nonlinearity.
+It transforms a sequence of input vectors of dimension `D` into a sequence of hidden state vectors of dimension `H`.
+It operates over sequences of length `T` and minibatches of size `N`; the sequence length and minibatch size can change on 
+each forward pass.
 
-The output hidden states are computed using the recurrence relation ```h[t] = tanh(Wh h[t- 1] + Wx x[t] + b)```
+Ignoring minibatches for the moment, a vanilla RNN computes the next hidden state vector `h[t]` (of shape (`H,)`) from the
+previous hidden state `h[t - 1]` and the current input vector `x[t]` (of shape `(D,)`) using the recurrence relation
+
+```
+h[t] = tanh(Wh h[t- 1] + Wx x[t] + b)
+```
+
 where `Wx` is a matrix of input-to-hidden connections, `Wh` is a matrix of hidden-to-hidden connections, and `b` is a bias
-term.
+term. The weights `Wx` and `Wh` are stored in a single Tensor `rnn.weight` of shape `(D + H, H)` and the bias `b` is
+stored in a Tensor `rnn.bias` of shape `(H,)`.
 
 You can use a `VanillaRNN` instance in two different ways:
 
@@ -42,5 +49,31 @@ back-propagation through time. You cause the model to forget its hidden states b
 These behaviors are all exercised in the [unit test for VanillaRNN](../test/VanillaRNN_test.lua).
 
 # LSTM
+```lua
+lstm = nn.LSTM(D, H)
+```
+An LSTM (short for Long Short-Term Memory) is a fancy type of recurrent neural network that is much more commonly used
+than vanilla RNNs. Similar to the `VanillaRNN` above, an `LSTM` transforms a sequence of input vectors of dimension `D`
+into a sequence of hidden state vectors of dimension `H`. It also operates over sequences of length `T` and minibatches
+of size `N`, which can be different on each forward pass.
+
+An LSTM differs from a vanilla RNN in that it keeps track of both a *hidden state* and a *cell state* at each timestep.
+Ignoring minibatches, the next hidden state vector `h[t]` (of shape `(H,)`) and cell state vector `c[t]` 
+(also of shape `(H,)`) are computed from the previous hidden state `h[t - 1]`, previous cell
+state `c[t - 1]`, and current input `x[t]` (of shape `(D,)`) using the following recurrence relation:
+```
+ai[t] = Wxi x[t] + Whi h[t - 1] + bi  # Matrix / vector multiplication
+af[t] = Wxf x[t] + Whf h[t - 1] + bf  # Matrix / vector multiplication
+ao[t] = Wxo x[t] + Who h[t - 1] + bo  # Matrix / vector multiplication
+ag[t] = Wxg x[t] + Whg h[t - 1] + bg  # Matrix / vector multiplication
+
+i[t] = sigmoid(ai[t])  # Input gate
+f[t] = sigmoid(af[t])  # Forget gate
+o[t] = sigmoid(ao[t])  # Output gate
+g[t] = tanh(ag[t])     # Proposed update
+
+c[t] = f[t] * c[t - 1] + i[t] * g[t]  # Elementwise multiplication of vectors
+h[t] = o[t] * tanh(c[t])              # Elementwise multiplication of vectors
+```
 
 # LanguageModel
