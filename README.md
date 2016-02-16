@@ -2,7 +2,7 @@
 torch-rnn provides high-performance, reusable RNN and LSTM modules for torch7, and uses these modules for character-level
 language modeling similar to [char-rnn](https://github.com/karpathy/char-rnn).
 
-You can find documentation for the RNN and LSTM modules [here](modules.md); they have no dependencies other than `torch`
+You can find documentation for the RNN and LSTM modules [here](doc/modules.md); they have no dependencies other than `torch`
 and `nn`, so they should be easy to integrate into existing projects.
 
 Compared to char-rnn, torch-rnn is up to **1.9x faster** and uses up to **7x less memory**. For more details see 
@@ -77,7 +77,7 @@ python scripts/preprocess.py \
 
 This will produce files `my_data.h5` and `my_data.json` that will be passed to the training script.
 
-There are a few more flags you can use to configure preprocessing; [read about them here](flags.md#preprocessing)
+There are a few more flags you can use to configure preprocessing; [read about them here](doc/flags.md#preprocessing)
 
 ## Step 2: Train the model
 After preprocessing the data, you'll need to train the model using the `train.lua` script. This will be the slowest step.
@@ -98,7 +98,7 @@ th train.lua --input_h5 my_data.h5 --input_json my_data.json -rnn_type rnn -num_
 
 By default this will run in GPU mode using CUDA; to run in CPU-only mode, add the flag `-gpu -1`.
 
-There are many more flags you can use to configure training; [read about them here](flags.md#training).
+There are many more flags you can use to configure training; [read about them here](doc/flags.md#training).
 
 ## Step 3: Sample from the model
 After training a model, you can generate new text by sampling from it using the script `sample.lua`. Run it like this:
@@ -112,7 +112,7 @@ and print the results to the console.
 
 By default the sampling script will run in GPU mode using CUDA; to run in CPU-only mode add the flag `-gpu -1`.
 
-There are more flags you can use to configure sampling; [read about them here](flags.md#sampling).
+There are more flags you can use to configure sampling; [read about them here](doc/flags.md#sampling).
 
 # Benchmarks
 To benchmark `torch-rnn` against `char-rnn`, we use each to train LSTM language models for the tiny-shakespeare dataset
