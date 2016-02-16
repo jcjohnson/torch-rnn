@@ -55,8 +55,6 @@ if opt.gpu >= 0 and opt.gpu_backend == 'cuda' then
   dtype = 'torch.CudaTensor'
   print(string.format('Running with CUDA on GPU %d', opt.gpu))
 elseif opt.gpu >= 0 and opt.gpu_backend == 'opencl' then
-  -- Disabling OpenCL support for now because nn.LookupTable is broken in clnn.
-  assert(false, 'OpenCL training is not supported yet. Sorry!')
   -- Memory benchmarking is only supported in CUDA mode
   -- TODO: Time benchmarking is probably wrong in OpenCL mode.
   require 'cltorch'
