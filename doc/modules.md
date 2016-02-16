@@ -2,10 +2,10 @@
 torch-rnn provides high-peformance, reusable RNN and LSTM modules. These modules have no dependencies other than torch and 
 nn and each lives in a single file, so they can easily be incorporated into other projects.
 
-We also provide a LanguageModule used for character-level language modeling; this is less reusable, but demonstrates how
-LSTM and RNN modules can be mixed with existing torch modules.
+We also provide a LanguageModel module used for character-level language modeling; this is less reusable, but demonstrates 
+that LSTM and RNN modules can be mixed with existing torch modules.
 
-# VanillaRNN
+## VanillaRNN
 
 ```lua
 rnn = nn.VanillaRNN(D, H)
@@ -60,7 +60,7 @@ should call `:backward` directly rather than calling `:updateGradInput` and then
 
 The file [VanillaRNN.lua](../VanillaRNN.lua) is standalone, with no dependencies other than torch and nn.
 
-# LSTM
+## LSTM
 ```lua
 lstm = nn.LSTM(D, H)
 ```
@@ -128,7 +128,7 @@ should call `:backward` directly rather than calling `:updateGradInput` and then
 
 The file [LSTM.lua](../LSTM.lua) is standalone, with no dependencies other than torch and nn.
 
-# LanguageModel
+## LanguageModel
 ```
 model = nn.LanguageModel(kwargs)
 ```
