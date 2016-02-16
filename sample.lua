@@ -16,13 +16,18 @@ cmd:option('-gpu', 0)
 cmd:option('-verbose', 0)
 local opt = cmd:parse(arg)
 
-cutorch.setDevice(opt.gpu + 1)
 
 local checkpoint = torch.load(opt.checkpoint)
 local model = checkpoint.model
 
+if opt.gpu >= 0 then
+  require 'cutorch'
+  require 'cunn'
+  cutorch.setDevice(opt.gpu + 1)
+  model:cuda()
+end
+
 model:evaluate()
-model:cuda()
 
 local sample = model:sample(opt)
 print(sample)
