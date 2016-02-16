@@ -7,7 +7,8 @@ and each lives in a single file, so they can easily be incorporated into other p
 rnn = nn.VanillaRNN(D, H)
 ```
 
-The [VanillaRNN](../VanillaRNN.lua) module implements a vanilla recurrent neural network with a hyperbolic tangent 
+[VanillaRNN](../VanillaRNN.lua) is a [torch nn.Module](https://github.com/torch/nn/blob/master/doc/module.md#nn.Module)
+subclass implementing a vanilla recurrent neural network with a hyperbolic tangent 
 nonlinearity. It transforms a sequence of input vectors of dimension `D` into a sequence of hidden state vectors of 
 dimension `H`. It operates over sequences of length `T` and minibatches of size `N`; the sequence length and minibatch size 
 can change on  each forward pass.
@@ -55,9 +56,10 @@ The file [VanillaRNN.lua](../VanillaRNN.lua) is standalone, with no dependencies
 lstm = nn.LSTM(D, H)
 ```
 An LSTM (short for Long Short-Term Memory) is a fancy type of recurrent neural network that is much more commonly used
-than vanilla RNNs. Similar to the `VanillaRNN` above, the [LSTM](../LSTM.lua) module transforms a sequence of input vectors 
-of dimension `D` into a sequence of hidden state vectors of dimension `H`. It also operates over sequences of length `T` and
-minibatches of size `N`, which can be different on each forward pass.
+than vanilla RNNs. Similar to the `VanillaRNN` above, [LSTM](../LSTM.lua) is a
+[torch nn.Module](https://github.com/torch/nn/blob/master/doc/module.md#nn.Module) subclass implementing an LSTM.
+It transforms a sequence of input vectors  of dimension `D` into a sequence of hidden state vectors of dimension `H`; it 
+operates over sequences of length `T` and minibatches of size `N`, which can be different on each forward pass.
 
 An LSTM differs from a vanilla RNN in that it keeps track of both a *hidden state* and a *cell state* at each timestep.
 Ignoring minibatches, the next hidden state vector `h[t]` (of shape `(H,)`) and cell state vector `c[t]` 
