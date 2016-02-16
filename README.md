@@ -139,7 +139,3 @@ larger models: for models with 512 hidden units, we use **7x less memory** than 
 
 # TODOs
 - Get rid of Python / JSON / HDF5 dependencies?
-- Documentation
-  - VanillaRNN
-  - LSTM
-  - LanguageModel
