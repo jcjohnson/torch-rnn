@@ -56,7 +56,7 @@ cd torch-hdf5
 luarocks make hdf5-0-0.rockspec
 ```
 
-### CUDA support
+### CUDA support (Optional)
 To enable GPU acceleration with CUDA, you'll need to install CUDA 6.5 or higher and the following Lua packages:
 - [torch/cutorch](https://github.com/torch/cutorch)
 - [torch/cunn](https://github.com/torch/cunn)
@@ -68,7 +68,7 @@ luarocks install cutorch
 luarocks install cunn
 ```
 
-## OpenCL support
+## OpenCL support (Optional)
 To enable GPU acceleration with OpenCL, you'll need to install the following Lua packages:
 - [cltorch](https://github.com/hughperkins/cltorch)
 - [clnn](https://github.com/hughperkins/clnn)
