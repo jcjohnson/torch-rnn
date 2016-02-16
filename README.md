@@ -84,7 +84,7 @@ After preprocessing the data, you'll need to train the model using the `train.lu
 You can run the training script like this:
 
 ```bash
-th train.lua --input_h5 my_data.h5 --input_json my_data.json
+th train.lua -input_h5 my_data.h5 -input_json my_data.json
 ```
 
 This will read the data stored in `my_data.h5` and `my_data.json`, run for a while, and save checkpoints to files with 
@@ -93,10 +93,12 @@ names like `cv/checkpoint_1000.t7`.
 You can change the RNN type, hidden state size, and number of RNN layers like this:
 
 ```bash
-th train.lua --input_h5 my_data.h5 --input_json my_data.json -rnn_type rnn -num_layers 3 -rnn_size 256
+th train.lua -input_h5 my_data.h5 -input_json my_data.json -rnn_type rnn -num_layers 3 -rnn_size 256
 ```
 
 By default this will run in GPU mode using CUDA; to run in CPU-only mode, add the flag `-gpu -1`.
+
+To run with OpenCL, add the flag `-gpu_backend opencl`.
 
 There are many more flags you can use to configure training; [read about them here](doc/flags.md#training).
 
@@ -110,7 +112,8 @@ th sample.lua -checkpoint cv/checkpoint_10000.t7 -length 2000
 This will load the trained checkpoint `cv/checkpoint_10000.t7` from the previous step, sample 2000 characters from it,
 and print the results to the console.
 
-By default the sampling script will run in GPU mode using CUDA; to run in CPU-only mode add the flag `-gpu -1`.
+By default the sampling script will run in GPU mode using CUDA; to run in CPU-only mode add the flag `-gpu -1` and
+to run in OpenCL mode add the flag `-gpu_backend opencl`.
 
 There are more flags you can use to configure sampling; [read about them here](doc/flags.md#sampling).
 
