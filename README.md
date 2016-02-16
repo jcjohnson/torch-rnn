@@ -10,6 +10,15 @@ the [Benchmark](#benchmarks) section below.
 
 
 # Installation
+## System setup
+You'll need to install the header files for Python 2.7 and the HDF5 library. On Ubuntu you should be able to install
+like this:
+
+```bash
+sudo apt-get -y install python2.7-dev
+sudo apt-get install libhdf5-dev
+```
+
 ## Python setup
 The preprocessing script is written in Python 2.7; its dependencies are in the file `requirements.txt`.
 You can install these dependencies in a virtual environment like this:
@@ -57,6 +66,18 @@ You can install / update them by running:
 ```bash
 luarocks install cutorch
 luarocks install cunn
+```
+
+## OpenCL support
+To enable GPU acceleration with OpenCL, you'll need to install the following Lua packages:
+- [cltorch](https://github.com/hughperkins/cltorch)
+- [clnn](https://github.com/hughperkins/clnn)
+
+You can install / update them by running:
+
+```bash
+luarocks install cltorch
+luarocks install clnn
 ```
 
 # Usage
