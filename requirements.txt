@@ -1,6 +1,6 @@
 Cython==0.23.4
+numpy==1.10.4
 argparse==1.2.1
 h5py==2.5.0
-numpy==1.10.4
 six==1.10.0
 wsgiref==0.1.2
