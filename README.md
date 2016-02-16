@@ -115,14 +115,25 @@ By default the sampling script will run in GPU mode using CUDA; to run in CPU-on
 There are more flags you can use to configure sampling; [read about them here](flags.md#sampling).
 
 # Benchmarks
-To benchmark `torch-rnn` against `char-rnn`, we use each to train LSTM language models with 1, 2 or 3 layers and with
-an RNN size of 64, 128, 256, or 512. For each we use a minibatch size of 50, a sequence length of 50, and no dropout.
-For each model size and for both implementations, we record the forward/backward times and GPU memory usage over the first
-100 training iterations, and use these measurements to compute the mean time and memory usage.
+To benchmark `torch-rnn` against `char-rnn`, we use each to train LSTM language models for the tiny-shakespeare dataset
+with 1, 2 or 3 layers and with an RNN size of 64, 128, 256, or 512. For each we use a minibatch size of 50, a sequence 
+length of 50, and no dropout. For each model size and for both implementations, we record the forward/backward times and 
+GPU memory usage over the first 100 training iterations, and use these measurements to compute the mean time and memory 
+usage.
 
 All benchmarks were run on a machine with an Intel i7-4790k CPU, 32 GB main memory, and a Titan X GPU.
 
-<img src='imgs/lstm_time_benchmark.png' width="400px">
+Below we show the forward/backward times for both implementations, as well as the mean speedup of `torch-rnn` over 
+`char-rnn`. We see that `torch-rnn` is faster than `char-rnn` at all model sizes, with smaller models giving a larger
+speedup; for a single-layer LSTM with 128 hidden units, we achieve a **1.9x speedup**; for larger models we achieve about
+a 1.4x speedup.
+
+<img src='imgs/lstm_time_benchmark.png' width="800px">
+
+Below we show the GPU memory usage for both implementations, as well as the mean memory saving of `torch-rnn` over
+`char-rnn`. Again `torch-rnn` outperforms `char-rnn` at all model sizes, but here the savings become more significant for
+larger models: for models with 512 hidden units, we use **7x less memory** than `char-rnn`.
+
 <img src='imgs/lstm_memory_benchmark.png' width="400px">
 
 
