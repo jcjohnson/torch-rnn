@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import argparse, json, os
 import numpy as np
 import h5py
+import codecs
 
 
 parser = argparse.ArgumentParser()
@@ -18,7 +21,7 @@ if __name__ == '__main__':
 
   # First go the file once to see how big it is and to build the vocab
   total_size = 0
-  with open(args.input_txt, 'r') as f:
+  with codecs.open(args.input_txt, 'r', 'utf-8') as f:
     for line in f:
       total_size += len(line)
       for char in line:
@@ -53,7 +56,7 @@ if __name__ == '__main__':
 
   # Go through the file again and write data to numpy arrays
   split_idx, cur_idx = 0, 0
-  with open(args.input_txt, 'r') as f:
+  with codecs.open(args.input_txt, 'r', 'utf-8') as f:
     for line in f:
       for char in line:
         splits[split_idx][cur_idx] = token_to_idx[char]
