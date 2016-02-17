@@ -139,6 +139,7 @@ function LM:sample(kwargs)
       print('Seeding with: "' .. start_text .. '"')
     end
     local x = self:encode_string(start_text):view(1, -1)
+    io.write(start_text)
     local T0 = x:size(2)
     sampled[{{}, {1, T0}}]:copy(x)
     scores = self:forward(x)[{{}, {T0, T0}}]
@@ -162,6 +163,7 @@ function LM:sample(kwargs)
        next_char = torch.multinomial(probs, 1):view(1, 1)
     end
     sampled[{{}, {t, t}}]:copy(next_char)
+    io.write(self.idx_to_token[next_char[1][1]])
     scores = self:forward(next_char)
   end
 
