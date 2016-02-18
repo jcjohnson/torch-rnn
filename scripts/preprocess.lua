@@ -4,8 +4,15 @@ cmd = torch.CmdLine()
 cmd:text()
 cmd:text('Preprocess a text file for training a language model.')
 cmd:option('--input_text', 'data/tiny-shakespeare.txt', 'Input text file')
-cmd:option('--output_t7', 'data/tiny-shakespeare.t7', 'Output text file in torch binary file')
-cmd:option('--output_vocab', 'data/tiny-shakespeare.vocab.t7', 'Output vocab in torch binary file')
+-- split output into multiple files
+cmd:option('--train_t7', 'data/train-tiny-shakespeare.t7',
+           'Output training data file in torch binary file')
+cmd:option('--valid_t7', 'data/valid-tiny-shakespeare.t7',
+           'Output validating data file in torch binary file')
+cmd:option('--test_t7', 'data/test-tiny-shakespeare.t7',
+           'Output testing data file in torch binary file')
+cmd:option('--output_vocab', 'data/tiny-shakespeare.vocab.t7',
+           'Output vocab in torch binary file')
 cmd:option('--val_frac', 0.1, 'Validation fraction')
 cmd:option('--test_frac', 0.1, 'Testing fraction')
 cmd:option('--quiet', false, 'Disable all verbose outputs')
@@ -67,6 +74,10 @@ while true do
     -- XXX: Hard code new line
     line = line .. '\n'
     for c in line:gmatch('.') do
+        -- some split has 0 size
+        while dataset[split_idx]:size():size() == 0 do
+            split_idx = split_idx + 1
+        end
         dataset[split_idx][cur_idx] = char2index[c]
         cur_idx = cur_idx + 1
         if cur_idx > dataset[split_idx]:size(1) then
@@ -77,5 +88,7 @@ while true do
 end
 f:close()
 -- save to file
-torch.save(opt.output_t7, dataset)
+torch.save(opt.train_t7, train)
+if val_size > 0 then torch.save(opt.valid_t7, valid) end
+if test_size > 0 then torch.save(opt.test_t7, test) end
 torch.save(opt.output_vocab, char2index)
