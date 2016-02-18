@@ -1,4 +1,5 @@
 require 'pl'
+require 'torch'
 
 cmd = torch.CmdLine()
 cmd:text()
@@ -11,7 +12,7 @@ cmd:option('--valid_t7', 'data/valid-tiny-shakespeare.t7',
            'Output validating data file in torch binary file')
 cmd:option('--test_t7', 'data/test-tiny-shakespeare.t7',
            'Output testing data file in torch binary file')
-cmd:option('--output_vocab', 'data/tiny-shakespeare.vocab.t7',
+cmd:option('--output_vocab', 'data/vocab-tiny-shakespeare.t7',
            'Output vocab in torch binary file')
 cmd:option('--val_frac', 0.1, 'Validation fraction')
 cmd:option('--test_frac', 0.1, 'Testing fraction')
@@ -44,7 +45,7 @@ vocab_count = vocab_count + 1
 char2index['\n'] = vocab_count
 index2char = {}
 -- create index to vocab map
-for k, v in pairs(char2index) do table.insert(index2char, k) end
+for k, v in pairs(char2index) do index2char[v] = k end
 
 -- compute split size
 val_size = math.floor(opt.val_frac * char_count)
@@ -91,4 +92,4 @@ f:close()
 torch.save(opt.train_t7, train)
 if val_size > 0 then torch.save(opt.valid_t7, valid) end
 if test_size > 0 then torch.save(opt.test_t7, test) end
-torch.save(opt.output_vocab, char2index)
+torch.save(opt.output_vocab, index2char)
