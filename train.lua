@@ -4,6 +4,7 @@ require 'optim'
 
 require 'LanguageModel'
 require 'util.DataLoader'
+require 'util.MiniBatchLoader'
 
 local utils = require 'util.utils'
 
@@ -15,6 +16,12 @@ cmd:option('-input_h5', 'data/tiny-shakespeare.h5')
 cmd:option('-input_json', 'data/tiny-shakespeare.json')
 cmd:option('-batch_size', 50)
 cmd:option('-seq_length', 50)
+-- Optional: load dataset in t7
+cmd:option('-format', 'h5')
+cmd:option('-train_t7', 'data/train-tiny-shakespeare.t7')
+cmd:option('-valid_t7', 'data/valid-tiny-shakespeare.t7')
+cmd:option('-test_t7', 'data/test-tiny-shakespeare.t7')
+cmd:option('-vocab_t7', 'data/vocab-tiny-shakespeare.t7')
 
 -- Model options
 cmd:option('-model_type', 'lstm')
@@ -44,7 +51,7 @@ cmd:option('-gpu', 0)
 cmd:option('-gpu_backend', 'cuda')
 
 local opt = cmd:parse(arg)
-
+print(opt)
 
 -- Set up GPU stuff
 local dtype = 'torch.FloatTensor'
@@ -70,12 +77,19 @@ end
 
 
 -- Initialize the DataLoader and vocabulary
-local loader = DataLoader(opt)
-local vocab = utils.read_json(opt.input_json)
+local loader, vocab
 local idx_to_token = {}
-for k, v in pairs(vocab.idx_to_token) do
-  idx_to_token[tonumber(k)] = v
+if opt.format == 't7' then
+  loader = MiniBatchLoader(opt)
+  idx_to_token = torch.load(opt.vocab_t7)
+else
+  loader = DataLoader(opt)
+  vocab = utils.read_json(opt.input_json)
+  for k, v in pairs(vocab.idx_to_token) do
+    idx_to_token[tonumber(k)] = v
+  end
 end
+
 
 -- Initialize the model and criterion
 local opt_clone = torch.deserialize(torch.serialize(opt))
