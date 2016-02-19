@@ -22,6 +22,7 @@ cmd:option('-wordvec_size', 64)
 cmd:option('-rnn_size', 128)
 cmd:option('-num_layers', 2)
 cmd:option('-dropout', 0)
+cmd:option('-batchnorm', 0)
 
 -- Optimization options
 cmd:option('-max_epochs', 50)

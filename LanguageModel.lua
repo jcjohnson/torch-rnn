@@ -24,11 +24,15 @@ function LM:__init(kwargs)
   self.rnn_size = utils.get_kwarg(kwargs, 'rnn_size')
   self.num_layers = utils.get_kwarg(kwargs, 'num_layers')
   self.dropout = utils.get_kwarg(kwargs, 'dropout')
+  self.batchnorm = utils.get_kwarg(kwargs, 'batchnorm')
 
   local V, D, H = self.vocab_size, self.wordvec_dim, self.rnn_size
 
   self.net = nn.Sequential()
   self.rnns = {}
+  self.bn_view_in = {}
+  self.bn_view_out = {}
+
   self.net:add(nn.LookupTable(V, D))
   for i = 1, self.num_layers do
     local prev_dim = H
@@ -42,6 +46,15 @@ function LM:__init(kwargs)
     rnn.remember_states = true
     table.insert(self.rnns, rnn)
     self.net:add(rnn)
+    if self.batchnorm == 1 then
+      local view_in = nn.View(1, 1, -1):setNumInputDims(3)
+      table.insert(self.bn_view_in, view_in)
+      self.net:add(view_in)
+      self.net:add(nn.BatchNormalization(H))
+      local view_out = nn.View(1, -1):setNumInputDims(2)
+      table.insert(self.bn_view_out, view_out)
+      self.net:add(view_out)
+    end
     if self.dropout > 0 then
       self.net:add(nn.Dropout(self.dropout))
     end
@@ -67,6 +80,14 @@ function LM:updateOutput(input)
   local N, T = input:size(1), input:size(2)
   self.view1:resetSize(N * T, -1)
   self.view2:resetSize(N, T, -1)
+
+  for _, view_in in ipairs(self.bn_view_in) do
+    view_in:resetSize(N * T, -1)
+  end
+  for _, view_out in ipairs(self.bn_view_out) do
+    view_out:resetSize(N, T, -1)
+  end
+
   return self.net:forward(input)
 end
 
