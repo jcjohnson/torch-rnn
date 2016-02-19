@@ -13,15 +13,17 @@ parser.add_argument('--output_json', default='data/tiny-shakespeare.json')
 parser.add_argument('--val_frac', type=float, default=0.1)
 parser.add_argument('--test_frac', type=float, default=0.1)
 parser.add_argument('--quiet', action='store_true')
+parser.add_argument('--encoding', default='utf-8')
 args = parser.parse_args()
 
 
 if __name__ == '__main__':
-  token_to_idx = {}
+  if args.encoding == 'bytes': args.encoding = None
 
   # First go the file once to see how big it is and to build the vocab
+  token_to_idx = {}
   total_size = 0
-  with codecs.open(args.input_txt, 'r', 'utf-8') as f:
+  with codecs.open(args.input_txt, 'r', args.encoding) as f:
     for line in f:
       total_size += len(line)
       for char in line:
@@ -56,7 +58,7 @@ if __name__ == '__main__':
 
   # Go through the file again and write data to numpy arrays
   split_idx, cur_idx = 0, 0
-  with codecs.open(args.input_txt, 'r', 'utf-8') as f:
+  with codecs.open(args.input_txt, 'r', args.encoding) as f:
     for line in f:
       for char in line:
         splits[split_idx][cur_idx] = token_to_idx[char]
@@ -71,11 +73,21 @@ if __name__ == '__main__':
     f.create_dataset('val', data=val)
     f.create_dataset('test', data=test)
 
-  # Also dump a JSON file for the vocab
+  # For 'bytes' encoding, replace non-ascii characters so the json dump
+  # doesn't crash
+  if args.encoding is None:
+    new_token_to_idx = {}
+    for token, idx in token_to_idx.iteritems():
+      if ord(token) > 127:
+        new_token_to_idx['[%d]' % ord(token)] = idx
+      else:
+        new_token_to_idx[token] = idx
+    token_to_idx = new_token_to_idx
+
+  # Dump a JSON file for the vocab
   json_data = {
     'token_to_idx': token_to_idx,
     'idx_to_token': {v: k for k, v in token_to_idx.iteritems()},
   }
   with open(args.output_json, 'w') as f:
     json.dump(json_data, f)
-
