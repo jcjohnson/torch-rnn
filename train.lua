@@ -220,6 +220,7 @@ for i = 1, num_iterations do
 
     -- Now save a torch checkpoint with the model
     -- Cast the model to float before saving so it can be used on CPU
+    model:clearState()
     model:float()
     checkpoint.model = model
     local filename = string.format('%s_%d.t7', opt.checkpoint_name, i)

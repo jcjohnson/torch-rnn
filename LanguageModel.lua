@@ -190,3 +190,7 @@ function LM:sample(kwargs)
   return self:decode_string(sampled[1])
 end
 
+
+function LM:clearState()
+  self.net:clearState()
+end

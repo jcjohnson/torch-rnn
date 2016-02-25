@@ -197,3 +197,8 @@ function layer:accGradParameters(input, gradOutput, scale)
   self:backward(input, gradOutput, scale)
 end
 
+
+function layer:clearState()
+  self.buffer1:set()
+  self.buffer2:set()
+end
