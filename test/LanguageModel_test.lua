@@ -27,6 +27,7 @@ function tests.simpleTest()
     rnn_size=H,
     num_layers=6,
     dropout=0,
+    batchnorm=0,
   }
   local crit = nn.CrossEntropyCriterion()
   local params, grad_params = LM:getParameters()
@@ -53,6 +54,7 @@ function tests.sampleTest()
     rnn_size=H,
     num_layers=6,
     dropout=0,
+    batchnorm=0,
   }
   
   local TT = 100
@@ -76,6 +78,7 @@ function tests.encodeDecodeTest()
     rnn_size=H,
     num_layers=6,
     dropout=0,
+    batchnorm=0,
   }
 
   local s = 'a bad feed'
