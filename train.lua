@@ -6,7 +6,7 @@ require 'LanguageModel'
 require 'util.DataLoader'
 
 local utils = require 'util.utils'
-
+local unpack = unpack or table.unpack
 
 local cmd = torch.CmdLine()
 
@@ -231,4 +231,3 @@ for i = 1, num_iterations do
     collectgarbage()
   end
 end
-

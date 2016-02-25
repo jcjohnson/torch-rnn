@@ -51,7 +51,7 @@ luarocks install optim
 luarocks install lua-cjson
 
 # We need to install torch-hdf5 from GitHub
-git clone git@github.com:deepmind/torch-hdf5.git
+git clone https://github.com/deepmind/torch-hdf5
 cd torch-hdf5
 luarocks make hdf5-0-0.rockspec
 ```
@@ -111,10 +111,10 @@ th train.lua -input_h5 my_data.h5 -input_json my_data.json
 This will read the data stored in `my_data.h5` and `my_data.json`, run for a while, and save checkpoints to files with 
 names like `cv/checkpoint_1000.t7`.
 
-You can change the RNN type, hidden state size, and number of RNN layers like this:
+You can change the RNN model type, hidden state size, and number of RNN layers like this:
 
 ```bash
-th train.lua -input_h5 my_data.h5 -input_json my_data.json -rnn_type rnn -num_layers 3 -rnn_size 256
+th train.lua -input_h5 my_data.h5 -input_json my_data.json -model_type rnn -num_layers 3 -rnn_size 256
 ```
 
 By default this will run in GPU mode using CUDA; to run in CPU-only mode, add the flag `-gpu -1`.
