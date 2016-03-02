@@ -4,6 +4,7 @@ require 'nn'
 require 'TemporalAdapter'
 require 'VanillaRNN'
 require 'LSTM'
+require 'GRU'
 
 local utils = require 'util.utils'
 
@@ -41,6 +42,8 @@ function LM:__init(kwargs)
       rnn = nn.VanillaRNN(prev_dim, H)
     elseif self.model_type == 'lstm' then
       rnn = nn.LSTM(prev_dim, H)
+    elseif self.model_type == 'gru' then
+      rnn = nn.GRU(prev_dim, H)
     end
     rnn.remember_states = true
     table.insert(self.rnns, rnn)
