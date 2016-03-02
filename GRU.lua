@@ -242,6 +242,8 @@ function layer:clearState()
   self.buffer1:set()
   self.buffer2:set()
   self.buffer3:set()
+  self.grad_a_buffer:set()
+
   self.grad_h0:set()
   self.grad_x:set()
   self.output:set()
