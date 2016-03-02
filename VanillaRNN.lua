@@ -1,5 +1,6 @@
 require 'torch'
 require 'nn'
+require 'TemporalAdapter'
 
 
 local layer, parent = torch.class('nn.VanillaRNN', 'nn.Module')
