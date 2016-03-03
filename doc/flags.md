@@ -22,7 +22,8 @@ The training script `train.lua` accepts the following command-line flags:
 - `-model_type`: The type of recurrent network to use; either `lstm` (default) or `rnn`. `lstm` is slower but better.
 - `-wordvec_size`: Dimension of learned word vector embeddings; default is 64. You probably won't need to change this.
 - `-rnn_size`: The number of hidden units in the RNN; default is 128. Larger values (256 or 512) are commonly used to learn more powerful models and for bigger datasets, but this will significantly slow down computation.
-- `-dropout`: Amount of dropout regularization to apply after each RNN layer; must be in the range `0 <= droput < 1`. Setting `dropout` to 0 disables dropout, and higher numbers give a stronger regularizing effect.
+- `-dropout`: Amount of dropout regularization to apply after each RNN layer; must be in the range `0 <= dropout < 1`. Setting `dropout` to 0 disables dropout, and higher numbers give a stronger regularizing effect.
+- `-num_layers`: The number of layers present in the RNN; default is 2.
 
 **Optimization options**:
 - `-max_epochs`: How many training epochs to use for optimization. Default is 50.
