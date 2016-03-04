@@ -102,7 +102,7 @@ Input: Table of
 - x:  Sequence of inputs, of shape (N, T, D)
 
 Output:
-- h: Sequence of hidden states, of shape (T, N, H)
+- h: Sequence of hidden states, of shape (N, T, H)
 --]]
 function layer:updateOutput(input)
   local h0, x = self:_unpack_input(input)
