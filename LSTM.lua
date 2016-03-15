@@ -279,7 +279,7 @@ end
 
 
 function layer:updateGradInput(input, gradOutput)
-  self:backward(input, gradOutput, 0)
+  return self:backward(input, gradOutput, 0)
 end
 
 
