@@ -102,6 +102,18 @@ function LM:parameters()
 end
 
 
+function LM:training()
+  self.net:training()
+  parent.evaluate(self)
+end
+
+
+function LM:evaluate()
+  self.net:evaluate()
+  parent.evaluate(self)
+end
+
+
 function LM:resetStates()
   for i, rnn in ipairs(self.rnns) do
     rnn:resetStates()
@@ -173,9 +185,10 @@ function LM:sample(kwargs)
     first_t = 1
   end
   
+  local _, next_char = nil, nil
   for t = first_t, T do
     if sample == 0 then
-      local _, next_char = scores:max(3)
+      _, next_char = scores:max(3)
       next_char = next_char[{{}, {}, 1}]
     else
        local probs = torch.div(scores, temperature):double():exp():squeeze()
