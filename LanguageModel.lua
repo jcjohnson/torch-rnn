@@ -104,7 +104,7 @@ end
 
 function LM:training()
   self.net:training()
-  parent.evaluate(self)
+  parent.training(self)
 end
 
 
