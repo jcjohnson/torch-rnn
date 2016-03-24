@@ -20,6 +20,8 @@ The training script `train.lua` accepts the following command-line flags:
 
 **Model options**:
 - `-init_from`: Path to a checkpoint file from a previous run of `train.lua`. Use this to continue training from an existing checkpoint; if this flag is passed then the other flags in this section will be ignored and the architecture from the existing checkpoint will be used instead.
+- `-reset_training_history`: If resuming training from an existing checkpoint, set to 0 to keep the training history of that checkpoint, such as the validation loss numbers and benchmark information. Set to 1 to forget all previous training history (other than the model itself). Default is 1.
+- `-reset_training_position`: If resuming training from an existing checkpoint, set to 0 to resume training from the point in the training set where the existing checkpoint was saved. This is accomplished by skipping batches that have already been trained on. Set to 1 to start training from the beginning of the training set. Default is 1.
 - `-model_type`: The type of recurrent network to use; either `lstm` (default) or `rnn`. `lstm` is slower but better.
 - `-wordvec_size`: Dimension of learned word vector embeddings; default is 64. You probably won't need to change this.
 - `-rnn_size`: The number of hidden units in the RNN; default is 128. Larger values (256 or 512) are commonly used to learn more powerful models and for bigger datasets, but this will significantly slow down computation.

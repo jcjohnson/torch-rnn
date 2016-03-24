@@ -18,6 +18,8 @@ cmd:option('-seq_length', 50)
 
 -- Model options
 cmd:option('-init_from', '')
+cmd:option('-reset_training_history', 1)
+cmd:option('-reset_training_position', 1)
 cmd:option('-model_type', 'lstm')
 cmd:option('-wordvec_size', 64)
 cmd:option('-rnn_size', 128)
@@ -79,19 +81,6 @@ for k, v in pairs(vocab.idx_to_token) do
   idx_to_token[tonumber(k)] = v
 end
 
--- Initialize the model and criterion
-local opt_clone = torch.deserialize(torch.serialize(opt))
-opt_clone.idx_to_token = idx_to_token
-local model = nil
-if opt.init_from ~= '' then
-  print('Initializing from ', opt.init_from)
-  model = torch.load(opt.init_from).model:type(dtype)
-else
-  model = nn.LanguageModel(opt_clone):type(dtype)
-end
-local params, grad_params = model:getParameters()
-local crit = nn.CrossEntropyCriterion():type(dtype)
-
 -- Set up some variables we will use below
 local N, T = opt.batch_size, opt.seq_length
 local train_loss_history = {}
@@ -99,6 +88,37 @@ local val_loss_history = {}
 local val_loss_history_it = {}
 local forward_backward_times = {}
 local init_memory_usage, memory_usage = nil, {}
+
+-- Initialize the model and criterion
+local model = nil
+local last_resumed_batch = 0
+if opt.init_from ~= '' then
+  print('Initializing from ', opt.init_from)
+  local checkpoint = torch.load(opt.init_from)
+  model = checkpoint.model:type(dtype)
+  last_resumed_batch = checkpoint.val_loss_history_it[#checkpoint.val_loss_history_it]
+  -- Recover model-related parameters from the loaded checkpoint
+  opt.model_type = checkpoint.opt.model_type
+  opt.wordvec_dim = checkpoint.opt.wordvec_dim
+  opt.rnn_size = checkpoint.opt.rnn_size
+  opt.num_layers = checkpoint.opt.num_layers
+  opt.dropout = checkpoint.opt.dropout
+  opt.batchnorm = checkpoint.opt.batchnorm
+  -- Optionally recover training history
+  if opt.reset_training_history == 0 then
+    train_loss_history = checkpoint.train_loss_history
+    val_loss_history = checkpoint.val_loss_history
+    val_loss_history_it = checkpoint.val_loss_history_it
+    forward_backward_times = checkpoint.forward_backward_times
+    memory_usage = checkpoint.memory_usage
+  end
+else
+  local opt_clone = torch.deserialize(torch.serialize(opt))
+  opt_clone.idx_to_token = idx_to_token
+  model = nn.LanguageModel(opt_clone):type(dtype)
+end
+local params, grad_params = model:getParameters()
+local crit = nn.CrossEntropyCriterion():type(dtype)
 
 if opt.memory_benchmark == 1 then
   -- This should only be enabled in GPU mode
@@ -157,12 +177,22 @@ local function f(w)
   return loss, grad_params
 end
 
+-- Skip batches that have already been trained on by a resumed checkpoint
+local first_batch = 1
+if opt.reset_training_position == 0 then
+  print('Skipping batches:', last_resumed_batch)
+  while first_batch <= last_resumed_batch do
+    local x, y = loader:nextBatch('train')
+    first_batch = first_batch + 1
+  end
+end
+
 -- Train the model!
 local optim_config = {learningRate = opt.learning_rate}
 local num_train = loader.split_sizes['train']
 local num_iterations = opt.max_epochs * num_train
 model:training()
-for i = 1, num_iterations do
+for i = first_batch, num_iterations do
   local epoch = math.floor(i / num_train) + 1
 
   -- Check if we are at the end of an epoch
