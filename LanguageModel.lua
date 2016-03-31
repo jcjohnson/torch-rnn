@@ -5,6 +5,7 @@ require 'VanillaRNN'
 require 'LSTM'
 
 local utils = require 'util.utils'
+local utf8 = require 'lua-utf8'
 
 
 local LM, parent = torch.class('nn.LanguageModel', 'nn.Module')
@@ -122,9 +123,9 @@ end
 
 
 function LM:encode_string(s)
-  local encoded = torch.LongTensor(#s)
-  for i = 1, #s do
-    local token = s:sub(i, i)
+  local encoded = torch.LongTensor(utf8.len(s))
+  for i = 1, utf8.len(s) do
+    local token = utf8.sub(s, i, i)
     local idx = self.token_to_idx[token]
     assert(idx ~= nil, 'Got invalid idx')
     encoded[i] = idx

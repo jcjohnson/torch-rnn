@@ -14,6 +14,7 @@ description = {
 dependencies = {
    "torch >= 7.0",
    "nn >= 1.0",
+   "luautf8 >= 1.2",
 }
 build = {
   type = "builtin",
