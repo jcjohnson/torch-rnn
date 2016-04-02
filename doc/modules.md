@@ -143,3 +143,43 @@ recurrent neural network by simply stacking multiple instance in an `nn.Sequenti
 - `rnn_size`: Hidden state size for RNNs
 - `num_layers`: Number of RNN layers to use
 - `dropout`: Number between 0 and 1 giving dropout strength after each RNN layer
+
+## BRNN
+```lua
+brnn = nn.BRNN(forward, backward, [merge], [dimToReverse])
+```
+[BRNN](../BRNN.lua) (Bi-Directional Recurrent Neural Network) applies an input sequence to the forward and the backward module in forward/reverse order, and outputs a tensor of the same length. Default expects a tensor of batch x time x inputdim and reversal happens on second dimension (time). Outputs a  tensor of batch x time x outputdim.
+Example: 
+```
+-- Creates a BRNN with a forward/backward nn.LSTM module with outputdim = 2. 
+-- Default clones forward module and reversal happens on second dimension.
+brnn = nn.BRNN(nn.LSTM(5,2))
+input = torch.randn(1,1,5) -- Input of batch x time x inputdim.
+print(brnn:forward(input))
+```
+
+This outputs:
+```
+(1,.,.) = 
+ 0.01 *
+   2.6366 -5.0621
+[torch.DoubleTensor of size 1x1x2]
+```
+If we want to join the outputs instead:
+
+```
+brnn = nn.BRNN(nn.LSTM(5,2), nn.LSTM(5,2), nn.JoinTable(3))
+input = torch.randn(1,1,5) -- Input of batch x time x inputdim.
+print(brnn:forward(input))
+```
+
+This outputs:
+```
+(1,.,.) = 
+ -0.2883  0.0064  0.2711  0.1055
+[torch.DoubleTensor of size 1x1x4]
+```
+
+
+
+
