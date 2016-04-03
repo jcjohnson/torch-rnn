@@ -105,6 +105,7 @@ Output:
 - h: Sequence of hidden states, of shape (N, T, H)
 --]]
 function layer:updateOutput(input)
+  self.recompute_backward = true
   local h0, x = self:_unpack_input(input)
   local N, T, D, H = self:_get_sizes(input)
   self._return_grad_h0 = (h0 ~= nil)
@@ -144,7 +145,9 @@ end
 -- therefore we'll just implement backward and update gradInput and
 -- gradients with respect to parameters at the same time.
 function layer:backward(input, gradOutput, scale)
+  self.recompute_backward = false
   scale = scale or 1.0
+  assert(scale == 1.0, 'scale must be 1')
   local N, T, D, H = self:_get_sizes(input, gradOutput)
   local h0, x = self:_unpack_input(input)
   if not h0 then h0 = self.h0 end
@@ -189,12 +192,17 @@ end
 
 
 function layer:updateGradInput(input, gradOutput)
-  return self:updateGradInput(input, gradOutput, 0)
+  if self.recompute_backward then
+    self:backward(input, gradOutput, 1.0)
+  end
+  return self.gradInput
 end
 
 
 function layer:accGradParameters(input, gradOutput, scale)
-  self:backward(input, gradOutput, scale)
+  if self.recompute_backward then
+    self:backward(input, gradOutput, scale)
+  end
 end
 
 

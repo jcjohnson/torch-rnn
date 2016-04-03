@@ -5,7 +5,7 @@ require 'LSTM'
 local gradcheck = require 'util.gradcheck'
 
 
-local tests = {}
+local tests = torch.TestSuite()
 local tester = torch.Tester()
 
 
