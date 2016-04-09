@@ -142,6 +142,30 @@ to run in OpenCL mode add the flag `-gpu_backend opencl`.
 
 There are more flags you can use to configure sampling; [read about them here](doc/flags.md#sampling).
 
+## Step 4 (optional): Serve samples from an HTTP server
+If you want to generate new text on demand without loading the model for every sample, you can use the script `server.lua`. 
+You will need to install [Turbo](https://github.com/kernelsauce/turbo) framework first:
+```bash
+luarocks install turbo
+```
+
+Check [Turbo installation manual](https://github.com/kernelsauce/turbo#installation) in case of problems.
+Then run the server:
+
+```bash
+th server.lua -checkpoint cv/checkpoint_10000.t7 -port 8888
+```
+
+Now you can generate new sample by sending an HTTP GET request:
+```bash
+curl -G -d "length=100&temperature=0.9" http://localhost:8888/sample
+```
+
+The following command line arguments of `sample.lua` remain unchanged for `server.lua`: 
+`-checkpoint`, `-gpu`, `-gpu_backend`, `-verbose`. `-port` argument configures the HTTP port.
+The other arguments (`length`, `start_text`, `temperature` and `sample`) should be passed as GET parameters.
+
+
 # Benchmarks
 To benchmark `torch-rnn` against `char-rnn`, we use each to train LSTM language models for the tiny-shakespeare dataset
 with 1, 2 or 3 layers and with an RNN size of 64, 128, 256, or 512. For each we use a minibatch size of 50, a sequence 
