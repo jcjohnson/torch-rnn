@@ -143,3 +143,18 @@ recurrent neural network by simply stacking multiple instance in an `nn.Sequenti
 - `rnn_size`: Hidden state size for RNNs
 - `num_layers`: Number of RNN layers to use
 - `dropout`: Number between 0 and 1 giving dropout strength after each RNN layer
+
+## BRNN
+```
+brnn = nn.BRNN(fwd, bwd, [merge], [dimToReverse])
+```
+[BRNN](../BRNN.lua) encapsulates two modules, applying the input sequence in forward and reverse order to each separate
+module. Expects input of batch x time x inputdim. Defaults to summing both separate outputs on the 2nd dimension.
+
+Example:
+```
+input = torch.rand(1, 1, 5)
+brnn = nn.BRNN(nn.LSTM(5, 5), nn.LSTM(5, 5))
+print(brnn:forward(input))
+```
+Prints an output of a 1x1x5 tensor.
