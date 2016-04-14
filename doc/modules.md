@@ -149,7 +149,7 @@ recurrent neural network by simply stacking multiple instance in an `nn.Sequenti
 brnn = nn.BRNN(fwd, bwd, [merge], [dimToReverse])
 ```
 [BRNN](../BRNN.lua) encapsulates two modules, applying the input sequence in forward and reverse order to each separate
-module. Expects input of batch x time x inputdim. Defaults to summing both separate outputs on the 2nd dimension.
+module. Expects input of shape ```(N, T, H)```. Defaults to summing both separate outputs on the 2nd dimension.
 
 Example:
 ```
