@@ -17,12 +17,12 @@ end
 
 function ReverseSequence:reverseOutput(input)
     self.output:resizeAs(input)
+    local indices = torch.LongTensor():resize(input:size())
     local T = input:size(1)
-    for t = 1, T do
-        local timeStep = input:narrow(1, T - t + 1, 1)
-        local newOutput = self.output:narrow(1, t, 1)
-        newOutput:copy(timeStep)
+    for x = 1, T do
+        indices:narrow(1, x, 1):fill(T - x + 1)
     end
+    self.output = input:gather(1, indices)
 end
 
 function ReverseSequence:updateOutput(input)
@@ -44,12 +44,12 @@ end
 
 function ReverseSequence:reverseGradOutput(gradOutput)
     self.gradInput:resizeAs(gradOutput)
+    local indices = torch.LongTensor():resize(gradOutput:size())
     local T = gradOutput:size(1)
-    for t = 1, T do
-        local timeStep = gradOutput:narrow(1, T - t + 1, 1)
-        local newGradInput =  self.gradInput:narrow(1, t, 1)
-        newGradInput:copy(timeStep)
+    for x = 1, T do
+        indices:narrow(1, x, 1):fill(T - x + 1)
     end
+    self.gradInput = gradOutput:gather(1, indices)
 end
 
 function ReverseSequence:updateGradInput(inputTable, gradOutput)
