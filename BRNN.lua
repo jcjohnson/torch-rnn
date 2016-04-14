@@ -9,12 +9,12 @@
 -- For each step, the outputs of both rnn are merged together using
 -- the merge module (defaults to nn.CAddTable() which sums the activations).
 ------------------------------------------------------------------------
+require 'ReverseSequence'
+
 
 local BRNN, parent = torch.class('nn.BRNN', 'nn.Container')
 
 function BRNN:__init(forward, backward, merge, dimToReverse)
-    require 'ReverseSequence'
-
     if not torch.isTypeOf(forward, 'nn.Module') then
         error "BRNN: expecting nn.Module instance at arg 1"
     end
