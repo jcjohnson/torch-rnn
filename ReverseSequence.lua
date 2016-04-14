@@ -16,12 +16,12 @@ function ReverseSequence:__init(dim)
 end
 
 function ReverseSequence:reverseOutput(input)
-    self.output:resize(input:size()):zero()
-    -- reverse output
-    local k = 1
-    for i = input:size(1), 1, -1 do
-        self.output[k] = input[i]
-        k = k + 1
+    self.output:resizeAs(input)
+    local T = input:size(1)
+    for t = 1, T do
+        local timeStep = input:narrow(1, T - t + 1, 1)
+        local newOutput = self.output:narrow(1, t, 1)
+        newOutput:copy(timeStep)
     end
 end
 
@@ -43,11 +43,12 @@ function ReverseSequence:updateOutput(input)
 end
 
 function ReverseSequence:reverseGradOutput(gradOutput)
-    self.gradInput:resize(gradOutput:size()):zero()
-    local k = 1
-    for i = gradOutput:size(1), 1, -1 do
-        self.gradInput[k] = gradOutput[i]
-        k = k + 1
+    self.gradInput:resizeAs(gradOutput)
+    local T = gradOutput:size(1)
+    for t = 1, T do
+        local timeStep = gradOutput:narrow(1, T - t + 1, 1)
+        local newGradInput =  self.gradInput:narrow(1, t, 1)
+        newGradInput:copy(timeStep)
     end
 end
 
