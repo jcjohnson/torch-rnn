@@ -1,7 +1,7 @@
 require 'torch'
 require 'nn'
 
-require 'ReverseSequence'
+require '../ReverseSequence'
 
 local tests = torch.TestSuite()
 local tester = torch.Tester()
@@ -18,6 +18,10 @@ function tests.reverseSequenceTests()
     local reverseSequence = nn.ReverseSequence(3)
     local expectedOutput = torch.Tensor({{{5,4,3,2,1}, {10,9,8,7,6}}, {{15,14,13,12,11}, {20,19,18,17,16}}})
     tester:assertTensorEq(reverseSequence:forward(input), expectedOutput, 0)
+    local reverseSequence = nn.ReverseSequence(3)
+    local expectedOutput = torch.Tensor({{{5,4,3,2,1}, {10,9,8,7,6}}, {{15,14,13,12,11}, {20,19,18,17,16}}})
+    -- Backwards should reverse the gradOutput.
+    tester:assertTensorEq(reverseSequence:backward(nil, input), expectedOutput, 0)
 end
 
 tester:add(tests)
