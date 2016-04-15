@@ -1,7 +1,7 @@
 require 'torch'
 require 'nn'
 
-require '../ReverseSequence'
+require 'ReverseSequence'
 
 local tests = torch.TestSuite()
 local tester = torch.Tester()
