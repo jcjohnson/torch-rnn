@@ -10,6 +10,8 @@ function ReverseSequence:__init(dim)
     parent.__init(self)
     self.output = torch.Tensor()
     self.gradInput = torch.Tensor()
+    self.outputIndices = torch.LongTensor()
+    self.gradIndices = torch.LongTensor()
     assert(dim, "Must specify dimension to reverse sequence over")
     assert(dim <= 3, "Dimension has to be no greater than 3 (Only supports up to a 3D Tensor).")
     self.dim = dim
@@ -17,12 +19,12 @@ end
 
 function ReverseSequence:reverseOutput(input)
     self.output:resizeAs(input)
-    local indices = torch.LongTensor():resize(input:size())
+    self.outputIndices:resize(input:size())
     local T = input:size(1)
     for x = 1, T do
-        indices:narrow(1, x, 1):fill(T - x + 1)
+        self.outputIndices:narrow(1, x, 1):fill(T - x + 1)
     end
-    self.output:gather(input, 1, indices)
+    self.output:gather(input, 1, self.outputIndices)
 end
 
 function ReverseSequence:updateOutput(input)
@@ -44,12 +46,12 @@ end
 
 function ReverseSequence:reverseGradOutput(gradOutput)
     self.gradInput:resizeAs(gradOutput)
-    local indices = torch.LongTensor():resize(gradOutput:size())
+    self.gradIndices:resize(gradOutput:size())
     local T = gradOutput:size(1)
     for x = 1, T do
-        indices:narrow(1, x, 1):fill(T - x + 1)
+        self.gradIndices:narrow(1, x, 1):fill(T - x + 1)
     end
-    self.gradInput:gather(gradOutput, 1, indices)
+    self.gradInput:gather(gradOutput, 1, self.gradIndices)
 end
 
 function ReverseSequence:updateGradInput(inputTable, gradOutput)
