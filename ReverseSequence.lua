@@ -22,7 +22,7 @@ function ReverseSequence:reverseOutput(input)
     for x = 1, T do
         indices:narrow(1, x, 1):fill(T - x + 1)
     end
-    self.output = input:gather(1, indices)
+    self.output:gather(input, 1, indices)
 end
 
 function ReverseSequence:updateOutput(input)
@@ -49,7 +49,7 @@ function ReverseSequence:reverseGradOutput(gradOutput)
     for x = 1, T do
         indices:narrow(1, x, 1):fill(T - x + 1)
     end
-    self.gradInput = gradOutput:gather(1, indices)
+    self.gradInput:gather(gradOutput, 1, indices)
 end
 
 function ReverseSequence:updateGradInput(inputTable, gradOutput)
