@@ -49,6 +49,14 @@ function crit:__init()
   self.losses = torch.Tensor()
 end
 
+
+function crit:clearState()
+  self.lsm:clearState()
+  self.grad_logprobs:set()
+  self.losses:set()
+end
+
+
 -- Implementation note: We compute both loss and gradient in updateOutput, and
 -- just return the gradient from updateGradInput.
 function crit:updateOutput(input, target)
