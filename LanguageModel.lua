@@ -162,6 +162,7 @@ function LM:sample(kwargs)
   local verbose = utils.get_kwarg(kwargs, 'verbose', 0)
   local sample = utils.get_kwarg(kwargs, 'sample', 1)
   local temperature = utils.get_kwarg(kwargs, 'temperature', 1)
+  local stream = utils.get_kwarg(kwargs, 'stream', 0)
 
   local sampled = torch.LongTensor(1, T)
   self:resetStates()
@@ -172,6 +173,9 @@ function LM:sample(kwargs)
       print('Seeding with: "' .. start_text .. '"')
     end
     local x = self:encode_string(start_text):view(1, -1)
+    if stream == 1 then
+      io.write(start_text)
+    end
     local T0 = x:size(2)
     sampled[{{}, {1, T0}}]:copy(x)
     scores = self:forward(x)[{{}, {T0, T0}}]
@@ -196,6 +200,9 @@ function LM:sample(kwargs)
        next_char = torch.multinomial(probs, 1):view(1, 1)
     end
     sampled[{{}, {t, t}}]:copy(next_char)
+    if stream == 1 then
+      io.write(self.idx_to_token[next_char[1][1]])
+    end
     scores = self:forward(next_char)
   end
 
