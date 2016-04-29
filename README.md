@@ -10,6 +10,7 @@ the [Benchmark](#benchmarks) section below.
 
 
 # Installation
+
 ## System setup
 You'll need to install the header files for Python 2.7 and the HDF5 library. On Ubuntu you should be able to install
 like this:
@@ -79,6 +80,9 @@ You can install / update them by running:
 luarocks install cltorch
 luarocks install clnn
 ```
+
+## OSX Installation
+Jeff Thompson has written a very detailed installation guide for OSX that you [can find here](http://www.jeffreythompson.org/blog/2016/03/25/torch-rnn-mac-install/).
 
 # Usage
 To train a model and use it to generate new text, you'll need to follow three simple steps:

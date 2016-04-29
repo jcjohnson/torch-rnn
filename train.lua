@@ -249,6 +249,7 @@ for i = first_batch, num_iterations do
       val_loss_history_it = val_loss_history_it,
       forward_backward_times = forward_backward_times,
       memory_usage = memory_usage,
+      i = i
     }
     local filename = string.format('%s_%d.json', opt.checkpoint_name, i)
     -- Make sure the output directory exists before we try to write it
