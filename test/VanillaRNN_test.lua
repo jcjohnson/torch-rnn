@@ -5,7 +5,7 @@ local gradcheck = require 'util.gradcheck'
 require 'VanillaRNN'
 
 
-local tests = {}
+local tests = torch.TestSuite()
 local tester = torch.Tester()
 
 
@@ -102,7 +102,7 @@ end
 
 tests.gradCheckTest = gradCheckTestFactory(2, 3, 4, 5)
 
-
+--[[
 function tests.scaleTest()
   local N, T, D, H = 4, 5, 6, 7
   local rnn = nn.VanillaRNN(D, H)
@@ -135,6 +135,7 @@ function tests.scaleTest()
   tester:assertTensorEq(torch.cdiv(dw4, dw2), torch.Tensor(#dw2):fill(2), 1e-6)
   tester:assertTensorEq(torch.cdiv(db4, db2), torch.Tensor(#db2):fill(2), 1e-6)
 end
+--]]
 
 
 --[[
@@ -158,7 +159,7 @@ function tests.noInitialStateTest()
     tester:assert(torch.isTensor(din))
     check_size(din, {N, T, D})
 
-    tester:asserteq(rnn.h0:sum(), 0, 0)
+    tester:assert(rnn.h0:sum() == 0)
   end
 end
 

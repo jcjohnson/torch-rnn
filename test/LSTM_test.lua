@@ -5,7 +5,7 @@ require 'LSTM'
 local gradcheck = require 'util.gradcheck'
 
 
-local tests = {}
+local tests = torch.TestSuite()
 local tester = torch.Tester()
 
 
@@ -201,6 +201,31 @@ function tests.rememberStatesTest()
   lstm:backward(x, dout)
   tester:assertTensorEq(lstm.c0, torch.zeros(N, H), 0)
   tester:assertTensorEq(lstm.h0, torch.zeros(N, H), 0)
+end
+
+
+-- If we want to use an LSTM to process a sequence, we have two choices: either
+-- we run the whole sequence through at once, or we split it up along the time
+-- axis and run the sequences through separately after setting remember_states
+-- to true. This test checks that both choices give the same result.
+function tests.rememberStatesTestV2()
+  local N, T, D, H = 1, 12, 2, 3
+  local lstm = nn.LSTM(D, H)
+
+  local x = torch.randn(N, T, D)
+  local x1 = x[{{}, {1, T / 3}}]:clone()
+  local x2 = x[{{}, {T / 3 + 1, 2 * T / 3}}]:clone()
+  local x3 = x[{{}, {2 * T / 3 + 1, T}}]:clone()
+
+  local y = lstm:forward(x):clone()
+  lstm.remember_states = true
+  lstm:resetStates()
+  local y1 = lstm:forward(x1):clone()
+  local y2 = lstm:forward(x2):clone()
+  local y3 = lstm:forward(x3):clone()
+
+  local yy = torch.cat({y1, y2, y3}, 2)
+  tester:assertTensorEq(y, yy, 0)
 end
 
 

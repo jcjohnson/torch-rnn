@@ -19,10 +19,13 @@ The training script `train.lua` accepts the following command-line flags:
 - `-seq_length`: Number of timesteps for which the recurrent network is unrolled for backpropagation through time.
 
 **Model options**:
+- `-init_from`: Path to a checkpoint file from a previous run of `train.lua`. Use this to continue training from an existing checkpoint; if this flag is passed then the other flags in this section will be ignored and the architecture from the existing checkpoint will be used instead.
+- `-reset_iterations`: Set this to 0 to restore the iteration counter of a previous run. Default is 1 (do not restore iteration counter). Only applicable if `-init_from` option is used.
 - `-model_type`: The type of recurrent network to use; either `lstm` (default) or `rnn`. `lstm` is slower but better.
 - `-wordvec_size`: Dimension of learned word vector embeddings; default is 64. You probably won't need to change this.
 - `-rnn_size`: The number of hidden units in the RNN; default is 128. Larger values (256 or 512) are commonly used to learn more powerful models and for bigger datasets, but this will significantly slow down computation.
-- `-dropout`: Amount of dropout regularization to apply after each RNN layer; must be in the range `0 <= droput < 1`. Setting `dropout` to 0 disables dropout, and higher numbers give a stronger regularizing effect.
+- `-dropout`: Amount of dropout regularization to apply after each RNN layer; must be in the range `0 <= dropout < 1`. Setting `dropout` to 0 disables dropout, and higher numbers give a stronger regularizing effect.
+- `-num_layers`: The number of layers present in the RNN; default is 2.
 
 **Optimization options**:
 - `-max_epochs`: How many training epochs to use for optimization. Default is 50.
