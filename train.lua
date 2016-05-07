@@ -90,7 +90,14 @@ if opt.init_from ~= '' then
   local checkpoint = torch.load(opt.init_from)
   model = checkpoint.model:type(dtype)
   if opt.reset_iterations == 0 then
-    start_i = checkpoint.i
+    -- Backward compatibility with checkpoints made before
+    -- reset_iterations was implemented:
+    if checkpoint.i == nil then
+      print(string.format('reset_iterations: %s contains no iteration counter',
+                          opt.init_from))
+    else
+      start_i = checkpoint.i
+    end
   end
 else
   model = nn.LanguageModel(opt_clone):type(dtype)
