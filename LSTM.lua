@@ -295,3 +295,10 @@ function layer:accGradParameters(input, gradOutput, scale)
   end
 end
 
+
+function layer:__tostring__()
+  local name = torch.type(self)
+  local din, dout = self.input_dim, self.hidden_dim
+  return string.format('%s(%d -> %d)', name, din, dout)
+end
+
