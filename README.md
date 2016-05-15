@@ -11,6 +11,10 @@ the [Benchmark](#benchmarks) section below.
 
 # Installation
 
+## Docker Images
+Cristian Baldi has prepared Docker images for both CPU-only mode and GPU mode;
+you can [find them here](https://github.com/crisbal/docker-torch-rnn).
+
 ## System setup
 You'll need to install the header files for Python 2.7 and the HDF5 library. On Ubuntu you should be able to install
 like this:
