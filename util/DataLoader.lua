@@ -26,6 +26,11 @@ function DataLoader:__init(kwargs)
     local num = v:nElement()
     local extra = num % (N * T)
 
+    -- Ensure that `vy` is non-empty
+    if extra == 0 then
+      extra = N * T
+    end
+
     -- Chop out the extra bits at the end to make it evenly divide
     local vx = v[{{1, num - extra}}]:view(N, -1, T):transpose(1, 2):clone()
     local vy = v[{{2, num - extra + 1}}]:view(N, -1, T):transpose(1, 2):clone()
