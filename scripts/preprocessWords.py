@@ -101,7 +101,7 @@ if __name__ == '__main__':
     finaldict['*/WILDCARD/*'] = wordid
     wordid += 1
 
-    max = wordid
+    maxtoken = wordid
 
     outdata = []
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
                     if word in finaldict:
                         outdata.append(finaldict[word])
                     else:
-                        outdata.append(max-1)
+                        outdata.append(maxtoken-1)
                 outdata.append(finaldict[cha])
                 startchar = cnt + 1
 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
             if word in finaldict:
                 outdata.append(finaldict[word])
             else:
-                outdata.append(max - 1)
+                outdata.append(maxtoken - 1)
         outdata.append(finaldict['\n'])
 
     # First go the file once to see how big it is and to build the vocab
