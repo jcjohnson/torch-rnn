@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import argparse, json, os, codecs, h5py
+import argparse, json, os, codecs, h5py, re, string
 from unidecode import unidecode
 import numpy as np
 
@@ -23,114 +23,93 @@ if __name__ == '__main__':
 
     if args.encoding == 'bytes': args.encoding = None
 
+    # Build list of files
     infiles = []
     if args.input_folder != '':
         infiles = [os.path.join(args.input_folder,item) for item in os.listdir(args.input_folder) if item[-4:]=='.txt']
     else:
         infiles = [args.input_txt]
 
+    # Sanity check, words can't be in more documents than there are in the corpus
     if args.min_documents > len(infiles):
         args.min_documents = len(infiles)
 
-    punctuations = '.,?!&():;"\'\\/ \t'
-    punctuation = {i for i in punctuations}
+    # Regex to split on
+    regex = '(\W)'
 
-    wordlist = {i: [0,args.min_documents] for i in punctuations}
-    wordlist['\n'] = [0,args.min_documents]
+    # List of all words found, form is word:[number of total occurrences, number of files]
+    wordlist = {}
 
+    # Build a unified array of tokens
     unified = []
 
+    # Loop through input files
     for inpath in infiles:
 
+        # Open the file and read into string
         infile = codecs.open(inpath, 'r', args.encoding)
         if args.use_ascii:
             datastr = unidecode(infile.read()).encode('ascii', 'ignore')
-            datastr = datastr.replace('//------------------------------//', '')
-            datastr = datastr.replace('//', '')
         else:
             datastr = infile.read()
         infile.close()
 
+        # Split into tokens
         if args.case_sensitive:
-            indata = datastr.split('/n')
+            indata = re.split(regex,datastr)
         else:
-            indata = datastr.lower().split('/n')
-
+            indata = re.split(regex,datastr.lower())
+            
+        # Add to unified token array
         unified += indata
-        file_words = {i for i in punctuations}
-        file_words.add('\n')
+        
+        # Now we find word occurrences
+        file_words = set()
 
-        for line in indata:
-            startchar = 0
-            for cnt, cha in enumerate(line):
-                if cha in punctuation:
-                    if cnt > startchar:
-                        word = line[startchar:cnt]
-                        if word in wordlist:
-                            wordlist[word][0] += 1
-                            if word not in file_words:
-                                file_words.add(word)
-                                wordlist[word][1] += 1
-                        else:
-                            wordlist[word] = [1,1]
-                    wordlist[cha][0] += 1
-                    startchar = cnt + 1
+        # Add words to word lists or increment appropriate counters
+        for word in indata:
+            if word == '':
+                continue
+            if word in wordlist:
+                wordlist[word][0] += 1
+                if word not in file_words:
+                    file_words.add(word)
+                    wordlist[word][1] += 1
+            else:
+                file_words.add(word)
+                wordlist[word] = [1,1]
 
-            if cnt > startchar:
-                word = line[startchar:cnt]
-                if word in wordlist:
-                    wordlist[word][0] += 1
-                    if word not in file_words:
-                        file_words.add(word)
-                        wordlist[word][1] += 1
-                else:
-                    wordlist[word] = [1, 1]
-            wordlist['\n'][0] += 1
-
-    finaldict = {i: c+1 for c, i in enumerate(punctuation)}
-    finaldict['\n'] = len(punctuation)
-    wordid = len(punctuation) + 2
+    # Build the final dictionary: word to token number
+    token_to_idx = {}
+    wordid = 1 
+    ignore_counts = set(string.punctuation).union(string.whitespace) # Preserve tokens for all encountered punctuation or whitespace
 
     for item in wordlist:
-        if item in punctuation or item == '\n':
-            continue
-        if wordlist[item][0] >= args.min_occurrences and wordlist[item][1] >= args.min_documents:
-            finaldict[item] = wordid
+        if item in ignore_counts or (wordlist[item][0] >= args.min_occurrences and wordlist[item][1] >= args.min_documents):
+            token_to_idx[item] = wordid
             wordid += 1
 
-    finaldict['*/WILDCARD/*'] = wordid
+    # Add a wildcard character onto the end of everything...
+    token_to_idx['*/WILDCARD/*'] = wordid
+    wildcard_id = wordid
     wordid += 1
 
     maxtoken = wordid
 
+    # Now we create the final token array
     outdata = []
 
-    c = 0
-
-    for line in unified:
-        startchar = 0
-        for cnt, cha in enumerate(line):
-            if cha in punctuation:
-                if cnt > startchar:
-                    word = line[startchar:cnt]
-                    if word in finaldict:
-                        outdata.append(finaldict[word])
-                    else:
-                        outdata.append(maxtoken-1)
-                outdata.append(finaldict[cha])
-                startchar = cnt + 1
-
-        if cnt > startchar:
-            word = line[startchar:cnt]
-            if word in finaldict:
-                outdata.append(finaldict[word])
+    for word in unified:
+        if word == '':
+            continue
+        if word in wordlist:
+            if word in token_to_idx:
+                outdata.append(token_to_idx[word])
             else:
-                outdata.append(maxtoken - 1)
-        outdata.append(finaldict['\n'])
+                outdata.append(wildcard_id)
 
-    # First go the file once to see how big it is and to build the vocab
     total_size = len(outdata)
-    token_to_idx = finaldict
+    
     # Now we can figure out the split sizes
     val_size = int(args.val_frac * total_size)
     test_size = int(args.test_frac * total_size)
@@ -151,21 +130,11 @@ if __name__ == '__main__':
     if not args.quiet:
         print 'Using dtype ', dtype
 
-    # Just load data into memory ... we'll have to do something more clever
-    # for huge datasets but this should be fine for now
-    train = np.zeros(train_size, dtype=dtype)
-    val = np.zeros(val_size, dtype=dtype)
-    test = np.zeros(test_size, dtype=dtype)
+    # Split data up into train,val, and test sets. This avoids zeros popping up (might have been the cause of earlier issues)
+    train = np.array(outdata[:train_size], dtype=dtype)
+    val = np.array(outdata[train_size:train_size+val_size], dtype=dtype)
+    test = np.array(outdata[-test_size:], dtype=dtype)
     splits = [train, val, test]
-
-    # Go through the file again and write data to numpy arrays
-    split_idx, cur_idx = 0, 0
-    for token in outdata:
-        splits[split_idx][cur_idx] = token
-        cur_idx += 1
-        if cur_idx == splits[split_idx].size:
-            split_idx += 1
-            cur_idx = 0
 
     # Write data to HDF5 file
     with h5py.File(args.output_h5, 'w') as f:
