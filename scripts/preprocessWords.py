@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import argparse, json, os, codecs, h5py, re, string
+import argparse, json, os, codecs, h5py, re, string, random
 from unidecode import unidecode
 import numpy as np
 
@@ -56,9 +56,9 @@ if __name__ == '__main__':
 
         # Split into tokens
         if args.case_sensitive:
-            indata = re.split(regex,datastr)
+            indata = re.split(regex,datastr,flags=re.UNICODE)
         else:
-            indata = re.split(regex,datastr.lower())
+            indata = re.split(regex,datastr.lower(),flags=re.UNICODE)
             
         # Add to unified token array
         unified += indata
@@ -83,21 +83,31 @@ if __name__ == '__main__':
     token_to_idx = {}
     wordid = 1 
     ignore_counts = set(string.punctuation).union(string.whitespace) # Preserve tokens for all encountered punctuation or whitespace
+    
+    total_eliminated = 0
 
     for item in wordlist:
         if item in ignore_counts or (wordlist[item][0] >= args.min_occurrences and wordlist[item][1] >= args.min_documents):
             token_to_idx[item] = wordid
             wordid += 1
-
+        else:
+            total_eliminated+=1
+            
     # Add a wildcard character onto the end of everything...
-    token_to_idx['*/WILDCARD/*'] = wordid
-    wildcard_id = wordid
-    wordid += 1
+    
+    num_distinct_wild = min(10,int(0.01*total_eliminated))
+    wildcard_ids = []
+    
+    for wcnum in xrange(num_distinct_wild):
+        token_to_idx['*/WILDCARD/*{0}'.format(wcnum)] = wordid
+        wildcard_ids.append(wordid)
+        wordid += 1
 
     maxtoken = wordid
 
     # Now we create the final token array
     outdata = []
+    wildcard_replace_count = 0
 
     for word in unified:
         if word == '':
@@ -106,7 +116,8 @@ if __name__ == '__main__':
             if word in token_to_idx:
                 outdata.append(token_to_idx[word])
             else:
-                outdata.append(wildcard_id)
+                outdata.append(random.choice(wildcard_ids))
+                wildcard_replace_count += 1
 
     total_size = len(outdata)
     
@@ -117,11 +128,12 @@ if __name__ == '__main__':
 
     if not args.quiet:
         print 'Total unique words: {0}'.format(len(wordlist))
-        print 'Total vocabulary size: %d' % len(token_to_idx)
-        print 'Total tokens in file: %d' % total_size
-        print '  Training size: %d' % train_size
-        print '  Val size: %d' % val_size
-        print '  Test size: %d' % test_size
+        print 'Total vocabulary size: {0}'.format(len(token_to_idx))
+        print 'Total tokens in file: {0}'.format(total_size)
+        print 'Total wildcards in file: {0} ({1}%)'.format(wildcard_replace_count,100.0*wildcard_replace_count/total_size)
+        print '  Training size: {0}'.format(train_size)
+        print '  Val size: {0}'.format(val_size)
+        print '  Test size: {0}'.format(test_size)
 
     # Choose the datatype based on the vocabulary size
     dtype = np.uint8
