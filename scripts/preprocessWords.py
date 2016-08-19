@@ -17,6 +17,9 @@ parser.add_argument('--min_occurrences',type=int,default=20)
 parser.add_argument('--min_documents', type=int,default=1)
 parser.add_argument('--use_ascii', action='store_true')
 parser.add_argument('--encoding', default='utf-8')
+parser.add_argument('--wildcard_rate',type=float,default=0.01)
+parser.add_argument('--wildcard_max',type=int, default=-1)
+parser.add_argument('--wildcard_min',type=int,default=10)
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -95,7 +98,9 @@ if __name__ == '__main__':
             
     # Add a wildcard character onto the end of everything...
     
-    num_distinct_wild = min(10,int(0.01*total_eliminated))
+    num_distinct_wild = max(args.wildcard_min,int(args.wildcard_rate*total_eliminated))
+    if args.wildcard_max > 0:
+        num_distinct_wild = min(args.wildcard_max,num_distinct_wild)
     wildcard_ids = []
     
     for wcnum in xrange(num_distinct_wild):
@@ -128,7 +133,7 @@ if __name__ == '__main__':
 
     if not args.quiet:
         print 'Total unique words: {0}'.format(len(wordlist))
-        print 'Total vocabulary size: {0}'.format(len(token_to_idx))
+        print 'Total vocabulary size: {0} ({1} wildcards)'.format(len(token_to_idx), num_distinct_wild)
         print 'Total tokens in file: {0}'.format(total_size)
         print 'Total wildcards in file: {0} ({1}%)'.format(wildcard_replace_count,100.0*wildcard_replace_count/total_size)
         print '  Training size: {0}'.format(train_size)
