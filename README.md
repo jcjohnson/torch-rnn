@@ -114,7 +114,7 @@ To preprocess the input data with words as tokens, instead use `scripts/preproce
 
 A large text corpus will contain many rare words, usually typos or unusual names. Adding a token for each of these is not practical and can result in a very large token space. Using the options `--min_occurrences` or `--min_documents` allow specifying how many times or in how many documents a word must occur before being added as a token. Words that fail to meet these criteria are replaced by wildcards, which are randomly distributed to avoid overtraining.
 
-More information on additional flags are available [here](docs/flags.md#preprocessing word tokens)
+More information on additional flags are available [here](docs/flags.md#preprocessing)
 
 ## Step 2: Train the model
 After preprocessing the data, you'll need to train the model using the `train.lua` script. This will be the slowest step.
