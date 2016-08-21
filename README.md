@@ -1,5 +1,5 @@
 # torch-rnn
-torch-rnn provides high-performance, reusable RNN and LSTM modules for torch7, and uses these modules for character-level
+torch-rnn provides high-performance, reusable RNN and LSTM modules for torch7, and uses these modules for character-level and word-level 
 language modeling similar to [char-rnn](https://github.com/karpathy/char-rnn).
 
 You can find documentation for the RNN and LSTM modules [here](doc/modules.md); they have no dependencies other than `torch`
@@ -92,6 +92,7 @@ Jeff Thompson has written a very detailed installation guide for OSX that you [c
 To train a model and use it to generate new text, you'll need to follow three simple steps:
 
 ## Step 1: Preprocess the data
+### Preprocess Character Tokens
 You can use any text file for training models. Before training, you'll need to preprocess the data using the script
 `scripts/preprocess.py`; this will generate an HDF5 file and JSON file containing a preprocessed version of the data.
 
@@ -107,6 +108,13 @@ python scripts/preprocess.py \
 This will produce files `my_data.h5` and `my_data.json` that will be passed to the training script.
 
 There are a few more flags you can use to configure preprocessing; [read about them here](doc/flags.md#preprocessing)
+
+### Preprocess Word Tokens
+To preprocess the input data with words as tokens, instead use `scripts/preprocessWords.py`, which takes the same options and some additional ones. Word preprocessing can read in a folder of documents as well as a single concatenated text file.
+
+A large text corpus will contain many rare words, usually typos or unusual names. Adding a token for each of these is not practical and can result in a very large token space. Using the options `--min_occurrences` or `--min_documents` allow specifying how many times or in how many documents a word must occur before being added as a token. Words that fail to meet these criteria are replaced by wildcards, which are randomly distributed to avoid overtraining.
+
+More information on additional flags are available [here](docs/flags.md#preprocessing word tokens)
 
 ## Step 2: Train the model
 After preprocessing the data, you'll need to train the model using the `train.lua` script. This will be the slowest step.
@@ -143,6 +151,10 @@ and print the results to the console.
 
 By default the sampling script will run in GPU mode using CUDA; to run in CPU-only mode add the flag `-gpu -1` and
 to run in OpenCL mode add the flag `-gpu_backend opencl`.
+
+To pre-seed the model with text, there are 2 options. If you used character-based preprocessing, use flag `-start_text` and include a quoted string.
+
+If you used word-based preprocessing, use the Python script `scripts\tokenizeWords.py` to generate a JSON file of tokens and provide it using the flag `-start_tokens`. Since Python was used to parse the input data into tokens, it is best to use Python to so it for seed text as well, as Lua does not have full regex support, hence the extra step. To learn more about the tokenizing script [see here](doc/flags.md#tokenizing).
 
 There are more flags you can use to configure sampling; [read about them here](doc/flags.md#sampling).
 
