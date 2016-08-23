@@ -3,16 +3,16 @@ Here we'll describe in detail the full set of command line flags available for p
 # Preprocessing
 The preprocessing script `scripts/preprocess.py` accepts the following command-line flags:
 - `--input_txt`: Path to the text file to be used for training. Default is the `tiny-shakespeare.txt` dataset.
+- `--input_folder`: Path to a folder containing .txt files to use for training. Overrides the `--input_txt` option
 - `--output_h5`: Path to the HDF5 file where preprocessed data should be written.
 - `--output_json`: Path to the JSON file where preprocessed data should be written.
 - `--val_frac`: What fraction of the data to use as a validation set; default is `0.1`.
 - `--test_frac`: What fraction of the data to use as a test set; default is `0.1`.
 - `--quiet`: If you pass this flag then no output will be printed to the console.
+- `--use_words`: Passing this flag preprocesses the flag as word tokens rather than characters. Using it activates additional options below (ignored otherwise).
 
-#Preprocessing Word Tokens
-Using the preprocessing script `scripts/preprocessWords.py` adds several additional options:
-- `--input_folder`: Path to a folder containing .txt files to use for training. Overrides the `--input_txt` option
-- `--case_sensitive`: Makes word tokens case sensitive. Default is to convert everything to lowercase.
+##Preprocessing Word Tokens
+- `--case_sensitive`: Makes word tokens case-sensitive. Default is to convert everything to lowercase for words, character tokens are ALWAYS case-sensitive.
 - `--min_occurrences`: Minimum number of times a word needs to be seen to be given a token. Default is 20.
 - `--min_documents`: Minimum number of documents a word needs to be seen in to be given a token. Default is 1.
 - `--use_ascii`: Convert the input files to ASCII by removing all non-ASCII characters. Default is unicode.
@@ -71,8 +71,12 @@ The sampling script `sample.lua` accepts the following command-line flags:
 
 #Tokenizing
 The tokenizing script `scripts/tokenizeWords.py` accepts the following command-line flags:
-- `--input`: The string to tokenize as a quoted block, ex. `--input "lorem ipsum"`
-- `--outfile`: The output JSON file to save the tokenization to. Default is `encoded_input.json`
-- `--dictionary`: The JSON output from `scripts/preprocessWords.py` to use to tokenize the string
-- `--use_ascii` Convert the input string to ASCII by removing all non-ASCII characters
-- `--case_sensitive` Preserve case when tokenizing the input string
+- `--input_str`: The string to tokenize as a quoted block, ex. `--input "lorem ipsum"`
+- `--input_txt`: Path to the text file to be used for training. Default is the `tiny-shakespeare.txt` dataset.
+- `--input_folder`: Path to a folder containing .txt files to use for training. Overrides the `--input_txt` option
+- `--input_json: The JSON output from `scripts/preprocessWords.py` to use to tokenize the string
+- `--output_json`: Optional - The output JSON file to save the tokenization to.
+- `--output_h5`: Optional - The path to the HDF5 file where preprocessed data should be written.
+- `--val_frac`: What fraction of the data to use as a validation set; default is `0.1`.
+- `--test_frac`: What fraction of the data to use as a test set; default is `0.1`.
+- `--quiet`: If you pass this flag then no output will be printed to the console except in case of error.
