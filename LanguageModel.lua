@@ -165,6 +165,7 @@ function LM:sample(kwargs)
     end
     local x = self:encode_string(start_text):view(1, -1)
     local T0 = x:size(2)
+    write(start_text)
     scores = self:forward(x)[{{}, {T0, T0}}]
     first_t = T0 + 1
   else
