@@ -42,3 +42,44 @@ function layer:updateGradInput(input, gradOutput)
   return self.gradInput
 end
 
+function layer:training()
+  self.net:training()
+  parent.training(self)
+end
+
+function layer:evaluate()
+  self.net:evaluate()
+  parent.evaluate(self)
+end
+
+function layer:parameters()
+  return self.net:parameters()
+end
+
+function layer:accGradParameters(input, gradOutput, scale)
+  return self.net:accGradParameters(input, gradOutput, scale)
+end
+
+function layer:backward(input, gradOutput, scale)
+  return self.net:backward(input, gradOutput, scale)
+end
+
+function layer:zeroGradParameters()
+  return self.net:zeroGradParameters()
+end
+
+function layer:updateParameters(learningRate)
+  return self.net:updateParameters(learningRate)
+end
+
+function layer:accUpdateGradParameters(input, gradOutput, learningRate)
+  return self.net:accUpdateGradParameters(input, gradOutput, learningRate)
+end
+
+function layer:clearState()
+  self.net:clearState()
+end
+
+function layer:__tostring__()
+  return 'nn.TemporalAdapter: ' .. tostring(self.net.modules[2])
+end
