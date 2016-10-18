@@ -114,6 +114,31 @@ function LM:decode_string(encoded)
   return s
 end
 
+function LM:read(file, version)
+  parent.read(self, file)
+  if self.view1 then
+    self:update_for_temporaladapter()
+  end
+end
+
+function LM:update_for_temporaladapter()
+  local between_views, mods = false, self.net.modules
+  local i,v
+  self.net = nn.Sequential():float()
+  for i,v in ipairs(mods) do
+    if torch.type(mods[i]) == 'nn.View' then
+      between_views = not between_views
+    elseif between_views then
+      self.net:add(nn.TemporalAdapter(mods[i]):float())
+    else
+      self.net:add(mods[i])
+    end
+  end
+  self.view1 = nil
+  self.view2 = nil
+  self.bn_view_in = nil
+  self.bn_view_out = nil
+end
 
 --[[
 Sample from the language model. Note that this will reset the states of the
