@@ -123,12 +123,23 @@ end
 
 function LM:encode_string(s)
   local encoded = torch.LongTensor(#s)
-  for i = 1, #s do
+  local i = 1
+  local j = 1
+  while i <= #s do
     local token = s:sub(i, i)
     local idx = self.token_to_idx[token]
+    if idx == nil and i < #s then
+      token = s:sub(i, i + 1)
+      idx = self.token_to_idx[token]
+      i = i + 1
+    end
     assert(idx ~= nil, 'Got invalid idx')
-    encoded[i] = idx
+    encoded[j] = idx
+
+    i = i + 1
+    j = j + 1
   end
+  encoded:resize(j - 1)
   return encoded
 end
 
