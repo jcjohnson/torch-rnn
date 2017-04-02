@@ -45,7 +45,13 @@ if __name__ == '__main__':
   # Choose the datatype based on the vocabulary size
   dtype = np.uint8
   if len(token_to_idx) > 255:
-    dtype = np.uint32
+      if len(token_to_idx) > 65535:
+          if len(token_to_idx) > 4294967295:
+              dtype = np.uint64
+          else:
+            dtype = np.uint32
+      else:
+        dtype = np.uint16
   if not args.quiet:
     print 'Using dtype ', dtype
 
