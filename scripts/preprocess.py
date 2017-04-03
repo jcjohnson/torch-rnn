@@ -20,21 +20,33 @@ args = parser.parse_args()
 if __name__ == '__main__':
   if args.encoding == 'bytes': args.encoding = None
 
-  # First go the file once to see how big it is and to build the vocab
-  token_to_idx = {}
+  # First go the file once to see how big it is
   total_size = 0
   with codecs.open(args.input_txt, 'r', args.encoding) as f:
     for line in f:
       total_size += len(line)
-      for char in line:
-        if char not in token_to_idx:
-          token_to_idx[char] = len(token_to_idx) + 1
 
   # Now we can figure out the split sizes
   val_size = int(args.val_frac * total_size)
   test_size = int(args.test_frac * total_size)
   train_size = total_size - val_size - test_size
- 
+
+  # Scan the fist N lines of the file in order to build the vocab
+  token_to_idx = {}
+  with codecs.open(args.input_txt, 'r', args.encoding) as f:
+    cur_idx = 0
+    for line in f:
+      for char in line:
+        cur_idx += 1
+        if cur_idx <= train_size:
+          if char not in token_to_idx:
+            token_to_idx[char] = len(token_to_idx) + 1
+        else:
+          break # break our of the nested loop
+      else:
+        continue # executed if the loop ended normally
+      break  # executed if 'continue' was skipped
+
   if not args.quiet:
     print 'Total vocabulary size: %d' % len(token_to_idx)
     print 'Total tokens in file: %d' % total_size
@@ -61,7 +73,8 @@ if __name__ == '__main__':
   with codecs.open(args.input_txt, 'r', args.encoding) as f:
     for line in f:
       for char in line:
-        splits[split_idx][cur_idx] = token_to_idx[char]
+        if char in token_to_idx:
+          splits[split_idx][cur_idx] = token_to_idx[char]
         cur_idx += 1
         if cur_idx == splits[split_idx].size:
           split_idx += 1
