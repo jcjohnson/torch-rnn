@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 
-import argparse, json, os
+import argparse
+import json
+import os
+import six
 import numpy as np
 import h5py
 import codecs
@@ -34,20 +38,20 @@ if __name__ == '__main__':
   val_size = int(args.val_frac * total_size)
   test_size = int(args.test_frac * total_size)
   train_size = total_size - val_size - test_size
- 
+
   if not args.quiet:
-    print 'Total vocabulary size: %d' % len(token_to_idx)
-    print 'Total tokens in file: %d' % total_size
-    print '  Training size: %d' % train_size
-    print '  Val size: %d' % val_size
-    print '  Test size: %d' % test_size
+    print('Total vocabulary size: %d' % len(token_to_idx))
+    print('Total tokens in file: %d' % total_size)
+    print('  Training size: %d' % train_size)
+    print('  Val size: %d' % val_size)
+    print('  Test size: %d' % test_size)
 
   # Choose the datatype based on the vocabulary size
   dtype = np.uint8
   if len(token_to_idx) > 255:
     dtype = np.uint32
   if not args.quiet:
-    print 'Using dtype ', dtype
+    print('Using dtype ', dtype)
 
   # Just load data into memory ... we'll have to do something more clever
   # for huge datasets but this should be fine for now
@@ -77,7 +81,7 @@ if __name__ == '__main__':
   # doesn't crash
   if args.encoding is None:
     new_token_to_idx = {}
-    for token, idx in token_to_idx.iteritems():
+    for token, idx in six.iteritems(token_to_idx):
       if ord(token) > 127:
         new_token_to_idx['[%d]' % ord(token)] = idx
       else:
@@ -87,7 +91,7 @@ if __name__ == '__main__':
   # Dump a JSON file for the vocab
   json_data = {
     'token_to_idx': token_to_idx,
-    'idx_to_token': {v: k for k, v in token_to_idx.iteritems()},
+    'idx_to_token': {v: k for k, v in six.iteritems(token_to_idx)},
   }
   with open(args.output_json, 'w') as f:
     json.dump(json_data, f)
