@@ -24,7 +24,7 @@ function DataLoader:__init(kwargs)
   self.split_sizes = {}
   for split, v in pairs(splits) do
     local num = v:nElement()
-    local extra = num % (N * T)
+    local extra = (num - 1) % (N * T) + 1
 
     -- Ensure that `vy` is non-empty
     if extra == 0 then
