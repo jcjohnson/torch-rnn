@@ -18,6 +18,7 @@ cmd:option('-seq_length', 50)
 
 -- Model options
 cmd:option('-init_from', '')
+cmd:option('-resume_from', '')
 cmd:option('-reset_iterations', 1)
 cmd:option('-model_type', 'lstm')
 cmd:option('-wordvec_size', 64)
@@ -48,6 +49,33 @@ cmd:option('-gpu_backend', 'cuda')
 
 local opt = cmd:parse(arg)
 
+if opt.resume_from ~= '' then
+	local resume = utils.read_json(opt.resume_from)
+	opt.init_from = resume.init_from
+	opt.reset_iterations = resume.reset_iterations
+	opt.input_h5 = resume.input_h5
+	opt.input_json = resume.input_json
+	opt.batch_size = resume.batch_size
+	opt.seq_length = resume.seq_length
+	opt.model_type = resume.model_type
+	opt.wordvec_size = resume.wordvec_size
+	opt.rnn_size = resume.rnn_size
+	opt.num_layers = resume.num_layers
+	opt.dropout = resume.dropout
+	opt.batchnorm = resume.batchnorm
+	opt.max_epochs = resume.max_epochs
+	opt.learning_rate = resume.learningRate
+	opt.grad_clip = resume.grad_clip
+	opt.lr_decay_every = resume.lr_decay_every
+	opt.lr_decay_factor = resume.lr_decay_factor
+	opt.print_every = resume.print_every
+	opt.checkpoint_every = resume.checkpoint_every
+	opt.checkpoint_name = resume.checkpoint_name
+	opt.speed_benchmark = resume.speed_benchmark
+	opt.memory_benchmark = resume.memory_benchmark
+	opt.gpu = resume.gpu
+	opt.gpu_backend = resume.gpu_backend
+end
 
 -- Set up GPU stuff
 local dtype = 'torch.FloatTensor'
@@ -231,6 +259,37 @@ for i = start_i + 1, num_iterations do
     -- Make sure the output directory exists before we try to write it
     paths.mkdir(paths.dirname(filename))
     utils.write_json(filename, checkpoint)
+	
+	-- Save a resume point with all options needed to restart training
+	local resume = {
+		init_from = string.format('%s_%d.t7',opt.checkpoint_name, i),
+		reset_iterations = 0,
+		input_h5 = opt.input_h5,
+		input_json = opt.input_json,
+		batch_size = opt.batch_size,
+		seq_length = opt.seq_length,
+		model_type = opt.model_type,
+		wordvec_size = opt.wordvec_size,
+		rnn_size = opt.rnn_size,
+		num_layers = opt.num_layers,
+		dropout = opt.dropout,
+		batchnorm = opt.batchnorm,
+		max_epochs = opt.max_epochs,
+		learning_rate = optim_config.learningRate,
+		grad_clip = opt.grad_clip,
+		lr_decay_every = opt.lr_decay_every,
+		lr_decay_factor = opt.lr_decay_factor,
+		print_every = opt.print_every,
+		checkpoint_every = opt.checkpoint_every,
+		checkpoint_name = opt.checkpoint_name,
+		speed_benchmark = opt.speed_benchmark,
+		memory_benchmark = opt.memory_benchmark,
+		gpu = opt.gpu,
+		gpu_backend = opt.gpu_backend,
+	}
+	filename = string.format('%s_%d_resume.json', opt.checkpoint_name, i)
+    paths.mkdir(paths.dirname(filename))
+    utils.write_json(filename, resume)
 
     -- Now save a torch checkpoint with the model
     -- Cast the model to float before saving so it can be used on CPU

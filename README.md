@@ -146,6 +146,14 @@ to run in OpenCL mode add the flag `-gpu_backend opencl`.
 
 There are more flags you can use to configure sampling; [read about them here](doc/flags.md#sampling).
 
+#Resuming
+Every checkpoint automatically saves a resume point. All parameters and the *current* learning rate are saved within.
+To pick up from that checkpoint, run the train script like this:
+
+```bash
+th train.lua -resume_from cv/checkpoint_10000_resume.json
+```
+
 # Benchmarks
 To benchmark `torch-rnn` against `char-rnn`, we use each to train LSTM language models for the tiny-shakespeare dataset
 with 1, 2 or 3 layers and with an RNN size of 64, 128, 256, or 512. For each we use a minibatch size of 50, a sequence 
