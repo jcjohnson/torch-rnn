@@ -24,16 +24,21 @@ function DataLoader:__init(kwargs)
   self.split_sizes = {}
   for split, v in pairs(splits) do
     local num = v:nElement()
-    local extra = num % (N * T)
+    local N_cur = N
+    if (N * T > num - 1) then
+      N_cur = math.floor((num - 1) / T)
+      print(string.format("Not enough %s data, reducing batch size to %d", split, N_cur))
+    end
+    local extra = num % (N_cur * T)
 
     -- Ensure that `vy` is non-empty
     if extra == 0 then
-      extra = N * T
+      extra = N_cur * T
     end
 
     -- Chop out the extra bits at the end to make it evenly divide
-    local vx = v[{{1, num - extra}}]:view(N, -1, T):transpose(1, 2):clone()
-    local vy = v[{{2, num - extra + 1}}]:view(N, -1, T):transpose(1, 2):clone()
+    local vx = v[{{1, num - extra}}]:view(N_cur, -1, T):transpose(1, 2):clone()
+    local vy = v[{{2, num - extra + 1}}]:view(N_cur, -1, T):transpose(1, 2):clone()
 
     self.x_splits[split] = vx
     self.y_splits[split] = vy
