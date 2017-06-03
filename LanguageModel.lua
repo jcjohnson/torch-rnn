@@ -162,12 +162,28 @@ function LM:sample(kwargs)
   local verbose = utils.get_kwarg(kwargs, 'verbose', 0)
   local sample = utils.get_kwarg(kwargs, 'sample', 1)
   local temperature = utils.get_kwarg(kwargs, 'temperature', 1)
+  local start_tokens = utils.get_kwarg(kwargs,'start_tokens','')
 
   local sampled = torch.LongTensor(1, T)
   self:resetStates()
 
   local scores, first_t
-  if #start_text > 0 then
+  if #start_tokens > 0 then
+	  local json_tokens = utils.read_json(start_tokens)
+	  
+	  local num_tokens = table.getn(json_tokens.tokens)
+	  
+  	  local tokenTensor = torch.LongTensor(num_tokens)
+	  for i = 1,num_tokens do
+	    tokenTensor[i] = json_tokens.tokens[i] 
+	  end
+	  
+	  local x = tokenTensor:view(1,-1)
+      local T0 = x:size(2)
+      sampled[{{}, {1, T0}}]:copy(x)
+      scores = self:forward(x)[{{}, {T0, T0}}]
+      first_t = T0 + 1
+  elseif #start_text > 0 then
     if verbose > 0 then
       print('Seeding with: "' .. start_text .. '"')
     end
