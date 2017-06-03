@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 
-import argparse, json, os, codecs, h5py, re, string, random
+import argparse, json, os, codecs, h5py, re, string, random, six
 from unidecode import unidecode
+
 import numpy as np
 
 def load_from_files(file_list,use_ascii,encoding):
@@ -159,23 +161,23 @@ if __name__ == '__main__':
     if not args.quiet:
         if len(wildcard_ids) > 0:
             wildcard_spec = ' ({0} wildcards)'.format(len(wildcard_ids))
-            print 'Total unique tokens: {0}'.format(len(wordlist))
+            print('Total unique tokens: {0}'.format(len(wordlist)))
         else:
              wildcard_spec = ''
-        print 'Total vocabulary size: {0}{1}'.format(len(token_to_idx), wildcard_spec)
-        print 'Total tokens in file: {0}'.format(total_size)
+        print('Total vocabulary size: {0}{1}'.format(len(token_to_idx), wildcard_spec))
+        print('Total tokens in file: {0}'.format(total_size))
         if len(wildcard_ids) > 0:
-            print 'Total wildcards in file: {0} ({1}%)'.format(wildcard_replace_count,100.0*wildcard_replace_count/total_size)
-        print '  Training size: {0}'.format(train_size)
-        print '  Val size: {0}'.format(val_size)
-        print '  Test size: {0}'.format(test_size)
+            print('Total wildcards in file: {0} ({1}%)'.format(wildcard_replace_count,100.0*wildcard_replace_count/total_size))
+        print('  Training size: {0}'.format(train_size))
+        print('  Val size: {0}'.format(val_size))
+        print('  Test size: {0}'.format(test_size))
 
     # Choose the datatype based on the vocabulary size
     dtype = np.uint8
     if len(token_to_idx) > 255:
         dtype = np.uint32
     if not args.quiet:
-        print 'Using dtype ', dtype
+        print('Using dtype {0}'.format(dtype))
 
     save_to_hdf5(outdata,args.output_h5,train_size,val_size,test_size,dtype)
 
