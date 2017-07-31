@@ -3,6 +3,7 @@ require 'nn'
 
 require 'VanillaRNN'
 require 'LSTM'
+require 'GRU'
 
 local utils = require 'util.utils'
 
@@ -42,6 +43,8 @@ function LM:__init(kwargs)
       rnn = nn.VanillaRNN(prev_dim, H)
     elseif self.model_type == 'lstm' then
       rnn = nn.LSTM(prev_dim, H)
+    elseif self.model_type == 'gru' then
+      rnn = nn.GRU(prev_dim, H)
     end
     rnn.remember_states = true
     table.insert(self.rnns, rnn)
@@ -148,11 +151,9 @@ end
 --[[
 Sample from the language model. Note that this will reset the states of the
 underlying RNNs.
-
 Inputs:
 - init: String of length T0
 - max_length: Number of characters to sample
-
 Returns:
 - sampled: (1, max_length) array of integers, where the first part is init.
 --]]
