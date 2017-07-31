@@ -53,6 +53,7 @@ local loss = 0
 for i = 1, num do
   print(string.format('%s batch %d / %d', opt.split, i, num))
   local x, y = loader:nextBatch(opt.split)
+  N = x:size(1)
   x = x:type(dtype)
   y = y:type(dtype):view(N * T)
   local scores = model:forward(x):view(N * T, -1)
