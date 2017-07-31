@@ -228,7 +228,7 @@ for i = start_i + 1, num_iterations do
       memory_usage = memory_usage,
       i = i
     }
-    local filename = string.format('%s_%d.json', opt.checkpoint_name, i)
+    local filename = string.format('%s_%d_epoch%.2f_%.4f.json', opt.checkpoint_name, i, epoch, val_loss)
     -- Make sure the output directory exists before we try to write it
     paths.mkdir(paths.dirname(filename))
     utils.write_json(filename, checkpoint)
@@ -238,7 +238,7 @@ for i = start_i + 1, num_iterations do
     model:clearState()
     model:float()
     checkpoint.model = model
-    local filename = string.format('%s_%d.t7', opt.checkpoint_name, i)
+    local filename = string.format('%s_%d_epoch%.2f_$.4f.t7', opt.checkpoint_name, i, epoch, val_loss)
     paths.mkdir(paths.dirname(filename))
     torch.save(filename, checkpoint)
     model:type(dtype)
