@@ -24,6 +24,8 @@ if __name__ == '__main__':
   if args.encoding == 'bytes': args.encoding = None
 
   if args.install_syllabic_dict != 'none' :
+      # Note that this step is unnecessary with pyhyphen>=3.0.0 as language
+      # dictionaries are now installed on-the-fly.
     from hyphen import dictools
     dictools.install(args.install_syllabic_dict)
     sys.exit(0)
@@ -43,10 +45,13 @@ if __name__ == '__main__':
       syllabic = True
 
       import unicodedata
-      from hyphen import dict_info
-      if not (args.syllabic in dict_info.keys()) :
+      from hyphen import dictools
+      if not dictools.is_installed(args.syllabic) :
+        # Note that in more recent versions of pyhyphen, it is not necessary
+        # to crash here, as the language dictionary will be automatically
+        # downloaded by Hyphenator.
         print 'Syllabic dictionary', args.syllabic, 'not installed'
-        print 'Installed dictionaries:', ' '.join(dict_info.keys())
+        print 'Installed dictionaries:', ' '.join(dictools.list_installed())
         sys.exit(0)
       from hyphen import Hyphenator
       separator = Hyphenator(args.syllabic)
