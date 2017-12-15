@@ -1,4 +1,6 @@
 # torch-rnn
+This repository is a fork of [torch-rnn](https://github.com/jcjohnson/torch-rnn) with modifications to improve compatibility with more recent versions of some dependences and an added example of a network trained to simulate the contents of RFC standards.
+
 torch-rnn provides high-performance, reusable RNN and LSTM modules for torch7, and uses these modules for character-level
 language modeling similar to [char-rnn](https://github.com/karpathy/char-rnn).
 
@@ -158,6 +160,14 @@ By default the sampling script will run in GPU mode using CUDA; to run in CPU-on
 to run in OpenCL mode add the flag `-gpu_backend opencl`.
 
 There are more flags you can use to configure sampling; [read about them here](doc/flags.md#sampling).
+
+# Example network - RFC simulation
+
+This repository contains an example of a trained LSTM network that simulates the contents of [rfc standards](https://en.wikipedia.org/wiki/Request_for_Comments) that are used to define Internet Protocols. The network has been trained with the text of all RFCs published to date. You can try generating your own RFC samples like this:
+
+```bash
+th sample.lua -checkpoint example-rfcs/rfcs.t7 -length 2000
+```
 
 # Benchmarks
 To benchmark `torch-rnn` against `char-rnn`, we use each to train LSTM language models for the tiny-shakespeare dataset
