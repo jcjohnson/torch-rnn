@@ -43,7 +43,7 @@ The main modeling code is written in Lua using [torch](http://torch.ch); you can
 - [torch/torch7](https://github.com/torch/torch7)
 - [torch/nn](https://github.com/torch/nn)
 - [torch/optim](https://github.com/torch/optim)
-- [lua-cjson](https://luarocks.org/modules/luarocks/lua-cjson)
+- [lua-cjson](https://luarocks.org/modules/openresty/lua-cjson)
 - [torch-hdf5](https://github.com/deepmind/torch-hdf5)
 
 After installing torch, you can install / update these packages by running the following:
