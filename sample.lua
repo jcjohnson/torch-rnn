@@ -13,11 +13,22 @@ cmd:option('-temperature', 1)
 cmd:option('-gpu', 0)
 cmd:option('-gpu_backend', 'cuda')
 cmd:option('-verbose', 0)
+cmd:option('-seed', 0)
 local opt = cmd:parse(arg)
 
 
 local checkpoint = torch.load(opt.checkpoint)
 local model = checkpoint.model
+
+if opt.seed == 0 then
+  opt.seed = torch.random()
+end
+torch.manualSeed(opt.seed)
+
+local msg
+msg = string.format('Random number seed: %d', opt.seed)
+if opt.verbose == 1 then print(msg) end
+
 
 local msg
 if opt.gpu >= 0 and opt.gpu_backend == 'cuda' then
