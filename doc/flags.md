@@ -57,3 +57,4 @@ The sampling script `sample.lua` accepts the following command-line flags:
 - `-gpu`: The ID of the GPU to use (zero-indexed). Default is 0. Set this to -1 to run in CPU-only mode.
 - `-gpu_backend`: The GPU backend to use; either `cuda` or `opencl`. Default is `cuda`.
 - `-verbose`: By default just the sampled text is printed to the console. Set this to 1 to also print some diagnostic information.
+- `-seed`: Default is 0. Set this to a non-zero value to seed the torch RNG with a specific value. Omit flag or set as zero to randomly seed the RNG(!). Seeding the RNG allows for reproductible output over multiple runs of sample.lua given the same parameters and checkpoint. Honours the -verbose flag.
