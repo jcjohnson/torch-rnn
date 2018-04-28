@@ -76,7 +76,14 @@ end
 local loader = DataLoader(opt)
 local vocab = utils.read_json(opt.input_json)
 local idx_to_token = {}
+local binary_pattern = "%[(%d+)%]"
 for k, v in pairs(vocab.idx_to_token) do
+  -- If the string is an escaped binary representation, replace it with its binary counterpart
+  if v:match(binary_pattern) then
+    local ordinal_string = v:gsub(binary_pattern, "%1")
+    local ordinal = tonumber(ordinal_string)
+    v = string.char(ordinal)
+  end
   idx_to_token[tonumber(k)] = v
 end
 
